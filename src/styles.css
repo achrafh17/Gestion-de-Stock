@@ -1,0 +1,126 @@
+.main-container {
+    -fx-background-color: linear-gradient(to bottom, #f8f9fa, #e9ecef);
+    -fx-padding: 30;
+    -fx-spacing: 25;
+    -fx-alignment: center;
+}
+
+.main-title {
+    -fx-font-family: "Arial Black", sans-serif;
+    -fx-font-size: 28px;
+    -fx-text-fill: #2c3e50;
+    -fx-font-weight: bold;
+    -fx-alignment: center;
+    -fx-padding: 0 0 20 0;
+}
+
+.section-title {
+    -fx-font-family: "Arial", sans-serif;
+    -fx-font-size: 20px;
+    -fx-text-fill: #34495e;
+    -fx-font-weight: bold;
+    -fx-alignment: center;
+    -fx-padding: 15 0 0 0;
+}
+
+.form-container {
+    -fx-background-color: white;
+    -fx-border-color: #dee2e6;
+    -fx-border-width: 1;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-padding: 25;
+    -fx-spacing: 20;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 15, 0, 0, 5);
+    -fx-max-width: 400;
+}
+
+.form-group {
+    -fx-spacing: 8;
+    -fx-padding: 5;
+}
+
+.form-label {
+    -fx-font-family: "Arial", sans-serif;
+    -fx-font-size: 14px;
+    -fx-text-fill: #495057;
+    -fx-font-weight: bold;
+}
+
+.form-textfield {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #ced4da;
+    -fx-border-width: 1.5;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 12 15;
+    -fx-font-size: 13px;
+    -fx-font-family: "Arial", sans-serif;
+    -fx-text-fill: #495057;
+    -fx-pref-width: 300;
+    -fx-prompt-text-fill: #adb5bd;
+}
+
+.form-textfield:focused {
+    -fx-border-color: #007bff;
+    -fx-border-width: 2;
+    -fx-effect: dropshadow(gaussian, rgba(0,123,255,0.25), 8, 0, 0, 0);
+}
+
+.button-container {
+    -fx-spacing: 15;
+    -fx-alignment: center;
+    -fx-padding: 20 0 0 0;
+}
+
+.btn-primary {
+    -fx-background-color: linear-gradient(to bottom, #007bff, #0056b3);
+    -fx-text-fill: white;
+    -fx-font-family: "Arial", sans-serif;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 12 25;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-cursor: hand;
+    -fx-min-width: 100;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 0, 2);
+}
+
+.btn-primary:hover {
+    -fx-background-color: linear-gradient(to bottom, #0056b3, #004085);
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 8, 0, 0, 3);
+    -fx-scale-y: 1.05;
+    -fx-scale-x: 1.05;
+}
+
+.btn-primary:pressed {
+    -fx-background-color: linear-gradient(to bottom, #004085, #002752);
+    -fx-effect: innershadow(gaussian, rgba(0,0,0,0.4), 3, 0, 0, 1);
+}
+
+.btn-secondary {
+    -fx-background-color: linear-gradient(to bottom, #6c757d, #545b62);
+    -fx-text-fill: white;
+    -fx-font-family: "Arial", sans-serif;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 12 25;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-cursor: hand;
+    -fx-min-width: 100;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.2), 5, 0, 0, 2);
+}
+
+.btn-secondary:hover {
+    -fx-background-color: linear-gradient(to bottom, #545b62, #383d41);
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 8, 0, 0, 3);
+    -fx-scale-y: 1.05;
+    -fx-scale-x: 1.05;
+}
+
+.btn-secondary:pressed {
+    -fx-background-color: linear-gradient(to bottom, #383d41, #23272b);
+    -fx-effect: innershadow(gaussian, rgba(0,0,0,0.4), 3, 0, 0, 1);
+}
