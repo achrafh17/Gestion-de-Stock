@@ -2,12 +2,21 @@ import java.util.ArrayList;
 
 import javax.swing.border.LineBorder;
 import javafx.application.Application;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TableColumn;
+import javafx.scene.image.ImageView;
+import javafx.scene.image.Image;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 //---------Appeler les packages Fournisseurs et Articles
 import models.ArticleObjet;
@@ -21,7 +30,6 @@ public class Gestion extends Application {
         Label TitleArticle = new Label("Ajouter un nouvel Article");
         TitleArticle.getStyleClass().add("section-title");
         // -----------ARRAY DES ARTICLES-----------------------
-        ArrayList<ArticleObjet> ArticleArray = new ArrayList<>();
         // ----------------------Nom Article---------------------
         VBox NomArticle = new VBox();
         NomArticle.getStyleClass().add("form-group");
@@ -73,8 +81,31 @@ public class Gestion extends Application {
         // -------------------------------------------------
         VBox Article = new VBox();
         Article.getStyleClass().add("form-container");
-        Article.getChildren().addAll(NomArticle,
+        Article.getChildren().addAll(TitleArticle, NomArticle,
                 ReferenceArticle, Categorie, Quantite, Bouttons_Ajouter_Anuller);
+
+        // =================AFFICHAGE DES
+        // ARTICLES============================================
+        // -------CONSTRUIRE UN
+        // TABLEAU-------------------------------------------------------
+        ObservableList<ArticleObjet> observablesArticle = FXCollections.observableArrayList();
+        TableView<ArticleObjet> tableArticle = new TableView<>();
+
+        TableColumn<ArticleObjet, String> ColumnNomArticle = new TableColumn<>("Nom");
+        ColumnNomArticle.setCellValueFactory(new PropertyValueFactory<>("nom"));
+
+        TableColumn<ArticleObjet, String> ColumnReferenceArticle = new TableColumn<>("Reference");
+        ColumnReferenceArticle.setCellValueFactory(new PropertyValueFactory<>("reference"));
+
+        TableColumn<ArticleObjet, String> ColumnQuantiteArticle = new TableColumn<>("Quantite");
+        ColumnQuantiteArticle.setCellValueFactory(new PropertyValueFactory("quantite"));
+
+        TableColumn<ArticleObjet, String> ColumnCategorieArticle = new TableColumn<>("Categorie");
+        ColumnCategorieArticle.setCellValueFactory(new PropertyValueFactory("categorie"));
+
+        tableArticle.setItems(observablesArticle);
+        tableArticle.getColumns().addAll(ColumnNomArticle, ColumnReferenceArticle, ColumnQuantiteArticle,
+                ColumnCategorieArticle);
 
         // -------------LIRE LES INPUTS ET CREER UN ARTICLE----------------
         AjouterBoutton.setOnAction(e -> {
@@ -83,14 +114,14 @@ public class Gestion extends Application {
                     ajouterReferenceArticle.getText(),
                     CategorieArticle.getText(),
                     Integer.parseInt(QuantiteArticle.getText()));
-            ArticleArray.add(articleobjet);
+            observablesArticle.add(articleobjet);
+            Article.getChildren().add(tableArticle);
         });
 
         // ------------------------------------------------------------------------------------
         // ------------------------------------------------------------------------------------
         // -----------------------NOM
         // FOURNISSEUR-------------------------------------------
-        ArrayList<FournisseurObjet> FournisseurArray = new ArrayList<>();
         Label FournisseurTitle = new Label("Ajouter un nouveau Fournisseur");
         FournisseurTitle.getStyleClass().add("section-title");
 
@@ -123,22 +154,68 @@ public class Gestion extends Application {
         // -----------------------------------------------------------------------------
         VBox Fournisseur = new VBox();
         Fournisseur.getStyleClass().add("form-container");
-        Fournisseur.getChildren().addAll(NomFournisseurContainer, EmailFournisseurContainer, Ajouter_Anller_Bouttons);
+        Fournisseur.getChildren().addAll(FournisseurTitle, NomFournisseurContainer, EmailFournisseurContainer,
+                Ajouter_Anller_Bouttons);
+
         // -----------Lire les input de fournisseur -------------------------------
+
+        ObservableList<FournisseurObjet> observablesFournisseur = FXCollections.observableArrayList();
+        TableView<FournisseurObjet> tableFournisseur = new TableView<>();
+
+        TableColumn<FournisseurObjet, String> ColumnNomFournisseur = new TableColumn<>("Nom");
+        ColumnNomFournisseur.setCellValueFactory(new PropertyValueFactory("nomFournisseur"));
+
+        TableColumn<FournisseurObjet, String> ColumnEmailFourniseur = new TableColumn<>("Email");
+        ColumnEmailFourniseur.setCellValueFactory(new PropertyValueFactory("emailFournisseur"));
+        tableFournisseur.setItems(observablesFournisseur);
+        tableFournisseur.getColumns().addAll(ColumnNomFournisseur, ColumnEmailFourniseur);
+        Fournisseur.getChildren().add(tableFournisseur);
+
         AjouterFournisseurButton.setOnAction(e -> {
             FournisseurObjet fournisseurobjet = new FournisseurObjet(NomFournisseurInput.getText(),
                     EmailFournisseurInput.getText());
-            FournisseurArray.add(fournisseurobjet);
+            observablesFournisseur.add(fournisseurobjet);
 
         });
-
         // ----------------DECLARATION DES GRANDES PARTIES----------
-        VBox root = new VBox();
-        root.getStyleClass().add("main-container");
+
         Label mainTitle = new Label("Application Gestion de Stock");
         mainTitle.getStyleClass().add("main-title");
-        root.getChildren().addAll(mainTitle, TitleArticle, Article, FournisseurTitle, Fournisseur);
-        Scene scene = new Scene(root);
+
+        ImageView ArticleIcon = new ImageView(
+                new Image("file:src/asserts/deployed_code_24dp_EA3323_FILL0_wght400_GRAD0_opsz24.png"));
+
+        Button toArticle = new Button(" Articles");
+        toArticle.getStyleClass().add("sidebar-button");
+        toArticle.setGraphic(ArticleIcon);
+
+        // ------------------------------
+        Button toFournisseur = new Button("Fournisseur");
+        toFournisseur.getStyleClass().add("sidebar-button");
+        ImageView FournisseurIcon = new ImageView(
+                new Image("file:src/asserts/local_shipping_24dp_EA3323_FILL0_wght400_GRAD0_opsz24.png"));
+        toFournisseur.setGraphic(FournisseurIcon);
+        // -----------------------
+        VBox BarreLateralle = new VBox();
+        BarreLateralle.getStyleClass().add("sidebar");
+        BarreLateralle.getChildren().addAll(toArticle, toFournisseur);
+        // --------------------
+        VBox main = new VBox();
+        main.getStyleClass().add("content-area");
+        toArticle.setOnAction(e -> {
+            main.getChildren().setAll(Article);
+        });
+        toFournisseur.setOnAction(e -> {
+            main.getChildren().setAll(Fournisseur);
+        });
+        // -------------------------------
+        HBox root = new HBox();
+        root.getStyleClass().add("main-container");
+        root.getChildren().addAll(BarreLateralle, main);
+        ScrollPane scroll = new ScrollPane();
+        scroll.setContent(root);
+        scroll.setFitToWidth(true);
+        Scene scene = new Scene(scroll);
         scene.getStylesheets().add(getClass().getResource("styles.css").toExternalForm());
         stage.setScene(scene);
         stage.setTitle("Application Gestion de Stock");
