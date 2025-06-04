@@ -1,19 +1,11 @@
 package models;
 
 public class FournisseurObjet {
-    public String nomFournisseur;
-    public String emailFournisseur;
+    public String NomFournisseur;
+    public String EmailFournisseur;
 
-    public FournisseurObjet(String nomFournisseur, String emailFournisseur) {
-        this.nomFournisseur = nomFournisseur;
-        this.emailFournisseur = emailFournisseur;
+    public FournisseurObjet(String NomFournisseur, String EmailFournisseur) {
+        this.NomFournisseur = NomFournisseur;
+        this.EmailFournisseur = EmailFournisseur;
     }
-
-    public String getNomFournisseur() {
-        return nomFournisseur;
-    };
-
-    public String getEmailFournisseur() {
-        return emailFournisseur;
-    };
 }

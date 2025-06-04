@@ -1,5 +1,4 @@
 package models;
-
 public class ArticleObjet {
     String nom;
     String reference;
@@ -12,21 +11,4 @@ public class ArticleObjet {
         this.Categorie = Categorie;
         this.quantite = quantite;
     }
-
-    public String getNom() {
-        return nom;
-    };
-
-    public String getReference() {
-        return reference;
-    };
-
-    public String getCategorie() {
-        return Categorie;
-    };
-
-    public int getQuantite() {
-        return quantite;
-    };
-
 }
