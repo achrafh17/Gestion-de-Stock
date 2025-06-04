@@ -1,5 +1,4 @@
 package models;
-
 public class ArticleObjet {
     String nom;
     String reference;
