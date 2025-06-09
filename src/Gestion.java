@@ -32,7 +32,7 @@ public class Gestion extends Application {
         Label label = new Label();
         Label TitleArticle = new Label("Ajouter un nouvel Article");
         TitleArticle.getStyleClass().add("section-title");
-        
+
         // -----------ARRAY DES ARTICLES-----------------------
         // ----------------------Nom Article---------------------
         VBox NomArticle = new VBox();
@@ -83,7 +83,7 @@ public class Gestion extends Application {
         QuantiteArticle.getStyleClass().add("form-textfield");
         QuantiteArticle.setPromptText("Quantite d Article");
         Quantite.getChildren().addAll(labelQuantiteArticle, QuantiteArticle);
-        
+
         // ---------------------SEUIL ALERTE---------------------------
         VBox SeuilAlerte = new VBox();
         SeuilAlerte.getStyleClass().add("form-group");
@@ -103,6 +103,15 @@ public class Gestion extends Application {
         SeuilAlertinput.getStyleClass().add("form-textfield");
         SeuilAlertinput.setPromptText("Seuil d'Alerte");
         SeuilAlerte.getChildren().addAll(labelSeuilAlert, SeuilAlertinput);
+        // ----------------ID FOURNISSEUR ---------------------------
+        VBox IDfournisseur = new VBox();
+        IDfournisseur.getStyleClass().add("form-group");
+        Label labelIDfournisseureArticle = new Label("ID de Fournisseur");
+        labelIDfournisseureArticle.getStyleClass().add("form-label");
+        TextField FournisseurIDArticle = new TextField();
+        FournisseurIDArticle.getStyleClass().add("form-textfield");
+        FournisseurIDArticle.setPromptText("ID de Fournisseur");
+        IDfournisseur.getChildren().addAll(labelIDfournisseureArticle, FournisseurIDArticle);
 
         // --------------------------------BOUTTON AJOUTER ANULLER Articles
         // --------------------
@@ -113,15 +122,14 @@ public class Gestion extends Application {
         Button AnullerBoutton = new Button("Annuler");
         AnullerBoutton.getStyleClass().add("btn-secondary");
         Bouttons_Ajouter_Anuller.getChildren().addAll(AnullerBoutton, AjouterBoutton);
-        
+
         // -------------------------------------------------
         VBox Article = new VBox();
         Article.getStyleClass().add("form-container");
         Article.getChildren().addAll(TitleArticle, NomArticle,
-                ReferenceArticle, Categorie, Quantite, SeuilAlerte, Bouttons_Ajouter_Anuller);
+                ReferenceArticle, Categorie, Quantite, SeuilAlerte, IDfournisseur, Bouttons_Ajouter_Anuller);
 
-        // =================AFFICHAGE DES
-        // ARTICLES============================================
+        // ==========AFFICHAGE DES ARTICLES========================================
         // -------CONSTRUIRE UN
         // TABLEAU-------------------------------------------------------
         ObservableList<ArticleObjet> observablesArticle = FXCollections.observableArrayList();
@@ -135,6 +143,10 @@ public class Gestion extends Application {
         TableColumn<ArticleObjet, String> ColumnReferenceArticle = new TableColumn<>("Reference");
         ColumnReferenceArticle.setCellValueFactory(new PropertyValueFactory<>("reference"));
         ColumnReferenceArticle.getStyleClass().add("table-column");
+
+        TableColumn<ArticleObjet, String> ColumnIDFOURNISSEURArticle = new TableColumn<>("ID_Fourniseur");
+        ColumnIDFOURNISSEURArticle.setCellValueFactory(new PropertyValueFactory<>("fournisseurid"));
+        ColumnIDFOURNISSEURArticle.getStyleClass().add("table-column");
 
         TableColumn<ArticleObjet, Void> ModifiedArticle = new TableColumn<>("Quantite");
         ModifiedArticle.getStyleClass().add("table-column");
@@ -153,7 +165,7 @@ public class Gestion extends Application {
                 DiscremenetQuantity.getStyleClass().add("quantity-btn");
                 DiscremenetQuantity.getStyleClass().add("decrement-btn");
                 QuantityVariable.getStyleClass().add("quantity-label");
-                
+
                 buttonsModifiedQuantity.getChildren().addAll(DiscremenetQuantity, QuantityVariable, IncrementQuantity);
 
                 IncrementQuantity.setOnAction(e -> {
@@ -194,7 +206,7 @@ public class Gestion extends Application {
                 }
             }
         });
-        
+
         TableColumn<ArticleObjet, Void> DeleteArticle = new TableColumn<>("Actions");
         DeleteArticle.getStyleClass().add("table-column");
         DeleteArticle.setCellFactory(params -> new TableCell<ArticleObjet, Void>() {
@@ -206,7 +218,7 @@ public class Gestion extends Application {
             {
                 deleteButton.getStyleClass().add("delete-btn");
                 imageview.getStyleClass().add("delete-icon");
-                
+
                 deleteButton.setOnAction(e -> {
                     ArticleObjet article = getTableView().getItems().get(getIndex());
                     getTableView().getItems().remove(article);
@@ -233,9 +245,8 @@ public class Gestion extends Application {
         ColumnSeuilArticle.getStyleClass().add("table-column");
 
         tableArticle.setItems(observablesArticle);
-        tableArticle.getColumns().addAll(ColumnNomArticle, ColumnReferenceArticle,
-                ModifiedArticle,
-                ColumnCategorieArticle, ColumnSeuilArticle, DeleteArticle);
+        tableArticle.getColumns().addAll(ColumnNomArticle, ColumnReferenceArticle, ColumnIDFOURNISSEURArticle,
+                ModifiedArticle, ColumnCategorieArticle, ColumnSeuilArticle, DeleteArticle);
 
         // -------------LIRE LES INPUTS ET CREER UN ARTICLE----------------
         AjouterBoutton.setOnAction(e -> {
@@ -243,7 +254,8 @@ public class Gestion extends Application {
                     ajouterNomArticle.getText(),
                     ajouterReferenceArticle.getText(),
                     CategorieArticle.getText(),
-                    Integer.parseInt(QuantiteArticle.getText()), Integer.parseInt(SeuilAlertinput.getText()));
+                    Integer.parseInt(QuantiteArticle.getText()), Integer.parseInt(SeuilAlertinput.getText()),
+                    FournisseurIDArticle.getText());
             observablesArticle.add(articleobjet);
             Article.getChildren().add(tableArticle);
             ajouterNomArticle.setText("");
@@ -252,7 +264,18 @@ public class Gestion extends Application {
         });
 
         // ------------------------------------------------------------------------------------
-        // ------------------------------------------------------------------------------------
+        // -------------------------ID FOURNISSUER
+        // -------------------------------------------------
+
+        VBox IDFournisseurContainer = new VBox();
+        IDFournisseurContainer.getStyleClass().add("form-group");
+        Label labelIDFournisseur = new Label("ID Fournisseur");
+        labelIDFournisseur.getStyleClass().add("form-label");
+        TextField IDFournisseurInput = new TextField();
+        IDFournisseurInput.getStyleClass().add("form-textfield");
+        IDFournisseurInput.setPromptText("Entrer ID de fournisseur");
+        IDFournisseurContainer.getChildren().addAll(labelIDFournisseur, IDFournisseurInput);
+
         // -------------NOM FOURNISSEUR-------------------------------------------
         Label FournisseurTitle = new Label("Ajouter un nouveau Fournisseur");
         FournisseurTitle.getStyleClass().add("section-title");
@@ -265,7 +288,7 @@ public class Gestion extends Application {
         NomFournisseurInput.getStyleClass().add("form-textfield");
         NomFournisseurInput.setPromptText("Entrer le nom de forunisseur");
         NomFournisseurContainer.getChildren().addAll(labelNomFournisseur, NomFournisseurInput);
-        
+
         // -----------------------------------------------------------------------------------------
         VBox EmailFournisseurContainer = new VBox();
         EmailFournisseurContainer.getStyleClass().add("form-group");
@@ -284,17 +307,21 @@ public class Gestion extends Application {
         Button AnuulerFournisseurButton = new Button("Anuller");
         AnuulerFournisseurButton.getStyleClass().add("btn-secondary");
         Ajouter_Anller_Bouttons.getChildren().addAll(AnuulerFournisseurButton, AjouterFournisseurButton);
-        
+
         // -----------------------------------------------------------------------------
         VBox Fournisseur = new VBox();
         Fournisseur.getStyleClass().add("form-container");
-        Fournisseur.getChildren().addAll(FournisseurTitle, NomFournisseurContainer, EmailFournisseurContainer,
+        Fournisseur.getChildren().addAll(FournisseurTitle, IDFournisseurContainer, NomFournisseurContainer,
+                EmailFournisseurContainer,
                 Ajouter_Anller_Bouttons);
 
         // -----------Lire les input de fournisseur -------------------------------
         ObservableList<FournisseurObjet> observablesFournisseur = FXCollections.observableArrayList();
         TableView<FournisseurObjet> tableFournisseur = new TableView<>();
         tableFournisseur.getStyleClass().add("table-view");
+
+        TableColumn<FournisseurObjet, String> ColumnIDfournisseur = new TableColumn<>("ID");
+        ColumnIDfournisseur.setCellValueFactory(new PropertyValueFactory("id"));
 
         TableColumn<FournisseurObjet, String> ColumnNomFournisseur = new TableColumn<>("Nom");
         ColumnNomFournisseur.setCellValueFactory(new PropertyValueFactory("nomFournisseur"));
@@ -303,17 +330,18 @@ public class Gestion extends Application {
         TableColumn<FournisseurObjet, String> ColumnEmailFourniseur = new TableColumn<>("Email");
         ColumnEmailFourniseur.setCellValueFactory(new PropertyValueFactory("emailFournisseur"));
         ColumnEmailFourniseur.getStyleClass().add("table-column");
-        
+
         tableFournisseur.setItems(observablesFournisseur);
-        tableFournisseur.getColumns().addAll(ColumnNomFournisseur, ColumnEmailFourniseur);
+        tableFournisseur.getColumns().addAll(ColumnIDfournisseur, ColumnNomFournisseur, ColumnEmailFourniseur);
         Fournisseur.getChildren().add(tableFournisseur);
 
         AjouterFournisseurButton.setOnAction(e -> {
-            FournisseurObjet fournisseurobjet = new FournisseurObjet(NomFournisseurInput.getText(),
+            FournisseurObjet fournisseurobjet = new FournisseurObjet(IDFournisseurInput.getText(),
+                    NomFournisseurInput.getText(),
                     EmailFournisseurInput.getText());
             observablesFournisseur.add(fournisseurobjet);
         });
-        
+
         // ----------------DECLARATION DES GRANDES PARTIES----------
         Label mainTitle = new Label("Application Gestion de Stock");
         mainTitle.getStyleClass().add("main-title");
@@ -333,41 +361,41 @@ public class Gestion extends Application {
                 new Image("file:src/asserts/local_shipping_24dp_EA3323_FILL0_wght400_GRAD0_opsz24.png"));
         FournisseurIcon.getStyleClass().add("sidebar-icon");
         toFournisseur.setGraphic(FournisseurIcon);
-        
+
         // -----------------------
         VBox BarreLateralle = new VBox();
         BarreLateralle.getStyleClass().add("sidebar");
         BarreLateralle.getChildren().addAll(toArticle, toFournisseur);
-        
+
         // --------------------
         VBox main = new VBox();
         main.getStyleClass().add("content-area");
-        
+
         toArticle.setOnAction(e -> {
             main.getChildren().setAll(Article);
             toArticle.getStyleClass().add("active");
             toFournisseur.getStyleClass().remove("active");
         });
-        
+
         toFournisseur.setOnAction(e -> {
             main.getChildren().setAll(Fournisseur);
             toFournisseur.getStyleClass().add("active");
             toArticle.getStyleClass().remove("active");
         });
-        
+
         // -------------------------------
         HBox root = new HBox();
         root.getStyleClass().add("main-container");
         root.getChildren().addAll(BarreLateralle, main);
-        
+
         ScrollPane scroll = new ScrollPane();
         scroll.getStyleClass().add("scroll-pane");
         scroll.setContent(root);
         scroll.setFitToWidth(true);
-        
+
         Scene scene = new Scene(scroll);
         scene.getStylesheets().add(getClass().getResource("styles.css").toExternalForm());
-        
+
         stage.setScene(scene);
         stage.setTitle("Application Gestion de Stock");
         stage.show();

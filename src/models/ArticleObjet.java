@@ -6,13 +6,16 @@ public class ArticleObjet {
     String Categorie;
     int quantite;
     int seuilAlerte;
+    String fournisseurid;
 
-    public ArticleObjet(String nom, String reference, String Categorie, int quantite, int seuilAlerte) {
+    public ArticleObjet(String nom, String reference, String Categorie, int quantite, int seuilAlerte,
+            String fournisseurid) {
         this.nom = nom;
         this.reference = reference;
         this.Categorie = Categorie;
         this.quantite = quantite;
         this.seuilAlerte = seuilAlerte;
+        this.fournisseurid = fournisseurid;
     }
 
     public String getNom() {
@@ -31,9 +34,18 @@ public class ArticleObjet {
         return quantite;
     };
 
+    public String getFournisseurid() {
+        return fournisseurid;
+    }
+
+    public void setFournisseurid(String fournisseurid) {
+        this.fournisseurid = fournisseurid;
+    }
+
     public int getSeuilAlerte() {
         return seuilAlerte;
     }
+
     public void setNom(String nom) {
         this.nom = nom;
     }
