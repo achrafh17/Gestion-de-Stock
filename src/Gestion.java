@@ -518,7 +518,7 @@ public class Gestion extends Application {
                 ImageView iconModifier = new ImageView(
                         new Image("file:src/asserts/edit_24dp_FFFFFF_FILL0_wght400_GRAD0_opsz24.png"));
                 Modifier.setGraphic(iconModifier);
-                
+
                 Modifier.setOnAction(e -> {
                     FournisseurObjet fournisseur = getTableView().getItems().get(getIndex());
                     VBox windowRootFournisseur = new VBox();
@@ -618,11 +618,59 @@ public class Gestion extends Application {
                     EmailFournisseurInput.getText());
             observablesFournisseur.add(fournisseurobjet);
         });
+        // ------------------TABLE DE BOARD SECTION-----------------
+        // the main page has to be on the board section
+        // ajouter le prix de chaque article
+        VBox TableDeBoardMain = new VBox();
+        TableDeBoardMain.getStyleClass().add("dashboard-main");
 
+        VBox TOtalArticles = new VBox();
+
+        Label TOtalArticlesLabel = new Label("Nombre total d'articles");
+        TOtalArticlesLabel.getStyleClass().add("stats-number-white");
+
+        Label TOtalArticlesValue = new Label();
+        TOtalArticlesValue.getStyleClass().add("stats-value");
+
+        TOtalArticles.getChildren().addAll(TOtalArticlesLabel, TOtalArticlesValue);
+
+        ImageView iconTotalArticles = new ImageView(
+                new Image("file:src/asserts/package.png"));
+        iconTotalArticles.setFitWidth(50);
+        iconTotalArticles.setFitHeight(50);
+
+        HBox FinalTotalArticles = new HBox();
+        FinalTotalArticles.getStyleClass().addAll("stats-card", "stats-card-primary");
+        FinalTotalArticles.getChildren().addAll(iconTotalArticles, TOtalArticles);
+
+        Button TableDeBoard = new Button("Table de board");
+        TableDeBoard.getStyleClass().add("sidebar-button");
+
+        VBox QuantiteTotal = new VBox();
+
+        Label QuantiteTotalLabel = new Label("Quantité totale d'articles");
+        QuantiteTotalLabel.getStyleClass().add("stats-number-white");
+
+        Label QuantiteTotalValue = new Label();
+        QuantiteTotalValue.getStyleClass().add("stats-value");
+
+        QuantiteTotal.getChildren().addAll(QuantiteTotalLabel, QuantiteTotalValue);
+
+        HBox FinalTotalQuantite = new HBox();
+        FinalTotalQuantite.getStyleClass().addAll("stats-card", "stats-card-primary");
+        ImageView iconQuantiteTotal = new ImageView(
+                new Image("file:src/asserts/trending-up.png"));
+        iconQuantiteTotal.setFitWidth(50);
+        iconQuantiteTotal.setFitHeight(50);
+        
+        FinalTotalQuantite.getChildren().addAll(iconQuantiteTotal, QuantiteTotal);
+
+        TableDeBoardMain.getChildren().addAll(FinalTotalArticles, FinalTotalQuantite);
         // ----------------DECLARATION DES GRANDES PARTIES----------
         Label mainTitle = new Label("Application Gestion de Stock");
         mainTitle.getStyleClass().add("main-title");
 
+        // TO ARTICLE-----------------------------
         ImageView ArticleIcon = new ImageView(
                 new Image("file:src/asserts/deployed_code_24dp_EA3323_FILL0_wght400_GRAD0_opsz24.png"));
         ArticleIcon.getStyleClass().add("sidebar-icon");
@@ -631,33 +679,54 @@ public class Gestion extends Application {
         toArticle.getStyleClass().add("sidebar-button");
         toArticle.setGraphic(ArticleIcon);
 
-        // ------------------------------
+        // TO FOURNISSEUR ---------------------------
         Button toFournisseur = new Button("Fournisseur");
         toFournisseur.getStyleClass().add("sidebar-button");
         ImageView FournisseurIcon = new ImageView(
                 new Image("file:src/asserts/local_shipping_24dp_EA3323_FILL0_wght400_GRAD0_opsz24.png"));
         FournisseurIcon.getStyleClass().add("sidebar-icon");
         toFournisseur.setGraphic(FournisseurIcon);
+        // ---GESTION DE MOVEMENT ----------------------
+        Button GestionDeMovemenet = new Button("Gestion de Movement");
+        GestionDeMovemenet.getStyleClass().add("sidebar-button");
 
         // -----------------------
         VBox BarreLateralle = new VBox();
         BarreLateralle.getStyleClass().add("sidebar");
-        BarreLateralle.getChildren().addAll(toArticle, toFournisseur);
+        BarreLateralle.getChildren().addAll(TableDeBoard, toArticle, toFournisseur, GestionDeMovemenet);
 
         // --------------------
         VBox main = new VBox();
         main.getStyleClass().add("content-area");
 
+        TableDeBoard.setOnAction(param -> {
+            int count = 0;
+            for (ArticleObjet article : observablesArticle) {
+                count += article.getQuantite();
+            }
+            TOtalArticlesValue.setText(String.valueOf(count));
+            QuantiteTotalValue.setText(String.valueOf(count));
+            main.getChildren().clear();
+            main.getChildren().setAll(TableDeBoardMain);
+
+            TableDeBoard.getStyleClass().add("active");
+            toFournisseur.getStyleClass().remove("active");
+            toArticle.getStyleClass().remove("active");
+
+        });
+
         toArticle.setOnAction(e -> {
             main.getChildren().setAll(Article);
             toArticle.getStyleClass().add("active");
             toFournisseur.getStyleClass().remove("active");
+            TableDeBoard.getStyleClass().remove("active");
         });
 
         toFournisseur.setOnAction(e -> {
             main.getChildren().setAll(Fournisseur);
             toFournisseur.getStyleClass().add("active");
             toArticle.getStyleClass().remove("active");
+            TableDeBoard.getStyleClass().remove("active");
         });
 
         // -------------------------------

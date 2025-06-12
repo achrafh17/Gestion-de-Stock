@@ -392,3 +392,107 @@
   -fx-background-color: #6d28d9;
   -fx-effect: innershadow(gaussian, rgba(0, 0, 0, 0.2), 0, 2, 4, 0);
 }
+/* Conteneur principal du dashboard */
+.dashboard-main {
+  -fx-background-color: #f8f9fa;
+  -fx-padding: 20;
+  -fx-spacing: 16;
+  -fx-alignment: top-left;
+}
+
+/* Carte statistique de base */
+.stats-card {
+  -fx-background-color: white;
+  -fx-background-radius: 12;
+  -fx-effect: dropshadow(gaussian, #00000010, 8, 0, 0, 2);
+  -fx-padding: 24;
+  -fx-spacing: 8;
+  -fx-alignment: center-left;
+  -fx-min-width: 350;
+  -fx-min-height: 90;
+  -fx-border-color: #e9ecef;
+  -fx-border-width: 1;
+  -fx-border-radius: 12;
+}
+
+.stats-card:hover {
+  -fx-effect: dropshadow(gaussian, #00000015, 12, 0, 0, 4);
+}
+
+/* Supprime les styles de gradient - on garde juste les cartes blanches */
+.stats-card-primary {
+  -fx-background-color: white;
+}
+
+/* Style pour les labels de titre */
+.stats-number-white {
+  -fx-font-family: "Inter", "SF Pro Display", "Segoe UI", system-ui,
+    -apple-system, sans-serif;
+  -fx-font-size: 17px;
+  -fx-font-weight: 700;
+  -fx-text-fill: gray;
+  -fx-letter-spacing: -0.025em;
+}
+
+/* Style pour les valeurs numériques */
+.stats-value {
+  -fx-font-family: "Inter", "SF Pro Display", "Segoe UI", system-ui,
+    -apple-system, sans-serif;
+  -fx-font-size: 32px;
+  -fx-font-weight: 700;
+  -fx-text-fill: #111827;
+  -fx-letter-spacing: -0.05em;
+}
+
+/* Ajout de pseudos-icônes avec des symboles Unicode */
+.stats-card:first-child .stats-number-white:first-child:before {
+  content: "📦 ";
+  -fx-text-fill: #3b82f6;
+  -fx-font-size: 16px;
+}
+
+/* Alternative si les pseudos ne marchent pas - utiliser directement dans le texte */
+.icon-box {
+  -fx-text-fill: #3b82f6;
+  -fx-font-size: 20px;
+}
+
+.icon-chart {
+  -fx-text-fill: #10b981;
+  -fx-font-size: 20px;
+
+  -fx-padding: 20;
+  -fx-spacing: 8;
+  -fx-alignment: top-left;
+  -fx-min-width: 300;
+  -fx-min-height: 80;
+  -fx-border-color: #e9ecef;
+  -fx-border-width: 1;
+  -fx-border-radius: 8;
+}
+
+/* Titre des statistiques */
+.stats-title {
+  -fx-font-size: 14px;
+  -fx-font-weight: 500;
+  -fx-text-fill: #6c757d;
+}
+
+/* Nombre/valeur des statistiques */
+.stats-number {
+  -fx-font-size: 28px;
+  -fx-font-weight: 700;
+  -fx-text-fill: #212529;
+}
+
+/* Icône bleue pour Total Articles */
+.stats-icon-blue {
+  -fx-text-fill: #4285f4;
+  -fx-font-size: 20px;
+}
+
+/* Icône verte pour Quantité */
+.stats-icon-green {
+  -fx-text-fill: #34a853;
+  -fx-font-size: 20px;
+}
