@@ -128,11 +128,41 @@ public class Gestion extends Application {
         Bouttons_Ajouter_Anuller.getChildren().addAll(AnullerBoutton, AjouterBoutton);
 
         // -------------------------------------------------
+
+        VBox ArticleFinal = new VBox(20);
+
+        ImageView AjouterArticleIcon = new ImageView(new Image("file:src/asserts/plus.png"));
+        AjouterArticleIcon.setFitHeight(15);
+        AjouterArticleIcon.setFitWidth(15);
+        Label AjouterArticleButtonLabel = new Label("Ajouter Article");
+        AjouterArticleButtonLabel.getStyleClass().add("button-label");
+        HBox AjouterArticleButtonItems = new HBox(8);
+        AjouterArticleButtonItems.getChildren().addAll(AjouterArticleIcon, AjouterArticleButtonLabel);
+        AjouterArticleButtonItems.setAlignment(Pos.CENTER);
+        Button AjouterArticle = new Button();
+        AjouterArticle.setGraphic(AjouterArticleButtonItems);
+        AjouterArticle.getStyleClass().add("button-ajouter");
+
         VBox Article = new VBox();
+
+        ArticleFinal.getChildren().addAll(AjouterArticle);
         Article.getStyleClass().add("form-container");
         Article.getChildren().addAll(TitleArticle, NomArticle,
                 ReferenceArticle, Categorie, Quantite, SeuilAlerte, IDfournisseur, Bouttons_Ajouter_Anuller);
+        Scene ArticleScene = new Scene(Article);
+        Stage ArticleStage = new Stage();
 
+        AjouterArticle.setOnAction(e -> {
+            ArticleScene.getStylesheets().add(getClass().getResource("styles.css").toExternalForm());
+            ArticleStage.setTitle("Ajouter Article");
+            ArticleStage.setScene(ArticleScene);
+            ArticleStage.show();
+
+        });
+        AnullerBoutton.setOnAction(param -> {
+            ArticleStage.close();
+
+        });
         // ==========AFFICHAGE DES ARTICLES========================================
         // -------CONSTRUIRE UN
         // TABLEAU-------------------------------------------------------
@@ -212,49 +242,25 @@ public class Gestion extends Application {
         TableColumn<ArticleObjet, Void> DeleteArticle = new TableColumn<>("Actions");
         DeleteArticle.getStyleClass().add("table-column");
         DeleteArticle.setCellFactory(params -> new TableCell<ArticleObjet, Void>() {
-            Image deleteIcon = new Image(
-                    "file:src/asserts/delete_24dp_EA3323_FILL0_wght400_GRAD0_opsz24.png");
-            ImageView imageview = new ImageView(deleteIcon);
-            final Button deleteButton = new Button("", imageview);
+
+            ImageView deleteIcon = new ImageView(new Image("file:src/asserts/trash.png"));
+            final Button deleteButton = new Button("", deleteIcon);
+
+            final Button Modifier = new Button();
+            HBox ActionsButtons = new HBox(Modifier, deleteButton);
 
             {
+                ActionsButtons.alignmentProperty().set(Pos.CENTER);
                 deleteButton.getStyleClass().add("delete-btn");
-                imageview.getStyleClass().add("delete-icon");
+                deleteIcon.getStyleClass().add("delete-icon");
 
                 deleteButton.setOnAction(e -> {
                     ArticleObjet article = getTableView().getItems().get(getIndex());
                     getTableView().getItems().remove(article);
                 });
-            }
-
-            @Override
-            protected void updateItem(Void item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty) {
-                    setGraphic(null);
-                } else {
-                    setGraphic(deleteButton);
-                }
-            }
-        });
-
-        TableColumn<ArticleObjet, String> ColumnCategorieArticle = new TableColumn<>("Categorie");
-        ColumnCategorieArticle.setCellValueFactory(new PropertyValueFactory<>("categorie"));
-        ColumnCategorieArticle.getStyleClass().add("table-column");
-
-        TableColumn<ArticleObjet, String> ColumnSeuilArticle = new TableColumn<>("Seuil");
-        ColumnSeuilArticle.setCellValueFactory(new PropertyValueFactory<>("seuilAlerte"));
-        ColumnSeuilArticle.getStyleClass().add("table-column");
-
-        // -----------------MODIFIER ARTICLE--------------------------------
-        TableColumn<ArticleObjet, Void> ModifierArticle = new TableColumn<>("Modifier");
-        ModifierArticle.setCellFactory(param -> new TableCell<ArticleObjet, Void>() {
-            private final Button Modifier = new Button("Modifier");
-
-            {
                 Modifier.getStyleClass().add("modify-btn");
                 ImageView iconModifier = new ImageView(
-                        new Image("file:src/asserts/edit_24dp_FFFFFF_FILL0_wght400_GRAD0_opsz24.png"));
+                        new Image("file:src/asserts/edit.png"));
                 Modifier.setGraphic(iconModifier);
 
                 Modifier.setOnAction(e -> {
@@ -382,16 +388,28 @@ public class Gestion extends Application {
                 if (empty) {
                     setGraphic(null);
                 } else {
-                    setGraphic(Modifier);
+                    setGraphic(ActionsButtons);
                 }
             }
         });
 
+        TableColumn<ArticleObjet, String> ColumnCategorieArticle = new TableColumn<>("Categorie");
+        ColumnCategorieArticle.setCellValueFactory(new PropertyValueFactory<>("categorie"));
+        ColumnCategorieArticle.getStyleClass().add("table-column");
+
+        TableColumn<ArticleObjet, String> ColumnSeuilArticle = new TableColumn<>("Seuil");
+        ColumnSeuilArticle.setCellValueFactory(new PropertyValueFactory<>("seuilAlerte"));
+        ColumnSeuilArticle.getStyleClass().add("table-column");
+
+        // -----------------MODIFIER ARTICLE--------------------------------
+
         tableArticle.setItems(observablesArticle);
         tableArticle.getColumns().addAll(ColumnNomArticle, ColumnReferenceArticle, ColumnIDFOURNISSEURArticle,
-                ModifiedArticle, ColumnCategorieArticle, ColumnSeuilArticle, DeleteArticle, ModifierArticle);
+                ModifiedArticle, ColumnCategorieArticle, ColumnSeuilArticle, DeleteArticle);
 
         // -------------LIRE LES INPUTS ET CREER UN ARTICLE----------------
+        ArticleFinal.getChildren().add(tableArticle);
+
         AjouterBoutton.setOnAction(e -> {
             ArticleObjet articleobjet = new ArticleObjet(
                     ajouterNomArticle.getText(),
@@ -400,10 +418,11 @@ public class Gestion extends Application {
                     Integer.parseInt(QuantiteArticle.getText()), Integer.parseInt(SeuilAlertinput.getText()),
                     FournisseurIDArticle.getText());
             observablesArticle.add(articleobjet);
-            Article.getChildren().add(tableArticle);
             ajouterNomArticle.setText("");
             ajouterReferenceArticle.setText("");
             CategorieArticle.setText("");
+            ArticleStage.close();
+
         });
 
         // ------------------------------------------------------------------------------------
@@ -456,12 +475,37 @@ public class Gestion extends Application {
         Ajouter_Anller_Bouttons.getChildren().addAll(AnuulerFournisseurButton, AjouterFournisseurButton);
 
         // -----------------------------------------------------------------------------
+        VBox FinalFournisseur = new VBox(20);
+        ImageView AjouterFournisseurIcon = new ImageView(new Image("file:src/asserts/plus.png"));
+        AjouterFournisseurIcon.setFitHeight(15);
+        AjouterFournisseurIcon.setFitWidth(15);
+        Label AjouterFournisseurButtonLabel = new Label("Ajouter Fournisseur");
+        AjouterFournisseurButtonLabel.getStyleClass().add("button-label");
+        HBox AjouterFournisseureButtonItems = new HBox(8);
+        AjouterFournisseureButtonItems.getChildren().addAll(AjouterFournisseurIcon, AjouterFournisseurButtonLabel);
+        AjouterFournisseureButtonItems.setAlignment(Pos.CENTER);
+        Button AjouterFourrnisseur = new Button();
+        AjouterFourrnisseur.setGraphic(AjouterFournisseureButtonItems);
+        AjouterFourrnisseur.getStyleClass().add("button-ajouter");
         VBox Fournisseur = new VBox();
+
         Fournisseur.getStyleClass().add("form-container");
         Fournisseur.getChildren().addAll(FournisseurTitle, IDFournisseurContainer, NomFournisseurContainer,
                 EmailFournisseurContainer,
                 Ajouter_Anller_Bouttons);
+        FinalFournisseur.getChildren().add(AjouterFourrnisseur);
+        Scene FournisseurScene = new Scene(Fournisseur);
+        Stage FournisseurStage = new Stage();
+        AjouterFourrnisseur.setOnAction(e -> {
+            FournisseurScene.getStylesheets().add(getClass().getResource("styles.css").toExternalForm());
+            FournisseurStage.setTitle("Ajouter Fournisseur");
+            FournisseurStage.setScene(FournisseurScene);
+            FournisseurStage.show();
+        });
+          AnuulerFournisseurButton.setOnAction(param -> {
+            FournisseurStage.close();
 
+        });
         // -----------Lire les input de fournisseur -------------------------------
         ObservableList<FournisseurObjet> observablesFournisseur = FXCollections.observableArrayList();
         TableView<FournisseurObjet> tableFournisseur = new TableView<>();
@@ -469,26 +513,35 @@ public class Gestion extends Application {
 
         TableColumn<FournisseurObjet, String> ColumnIDfournisseur = new TableColumn<>("ID");
         ColumnIDfournisseur.setCellValueFactory(new PropertyValueFactory("id"));
+        ColumnIDfournisseur.setStyle("-fx-alignment: CENTER;");
 
         TableColumn<FournisseurObjet, String> ColumnNomFournisseur = new TableColumn<>("Nom");
         ColumnNomFournisseur.setCellValueFactory(new PropertyValueFactory("nomFournisseur"));
-        ColumnNomFournisseur.getStyleClass().add("table-column");
+        ColumnNomFournisseur.setStyle("-fx-alignment: CENTER;");
 
         TableColumn<FournisseurObjet, String> ColumnEmailFourniseur = new TableColumn<>("Email");
         ColumnEmailFourniseur.setCellValueFactory(new PropertyValueFactory("emailFournisseur"));
         ColumnEmailFourniseur.getStyleClass().add("table-column");
+        ColumnEmailFourniseur.setStyle("-fx-alignment: CENTER;");
 
         // ========================supprimer un fournisseur=======================
 
         TableColumn<FournisseurObjet, Void> DeleteFournisseur = new TableColumn<>("Actions");
-        DeleteFournisseur.getStyleClass().add("table-column");
+        DeleteFournisseur.setStyle("-fx-alignment: CENTER;");
+        ColumnEmailFourniseur.getStyleClass().add("table-column");
+
         DeleteFournisseur.setCellFactory(params -> new TableCell<FournisseurObjet, Void>() {
             Image deleteIcon = new Image(
                     "file:src/asserts/delete_24dp_EA3323_FILL0_wght400_GRAD0_opsz24.png");
             ImageView imageview = new ImageView(deleteIcon);
-            final Button deleteButton = new Button("", imageview);
+            Button deleteButton = new Button("", imageview);
+            Button Modifier = new Button();
+            HBox ActionsFournisseur = new HBox();
 
             {
+                ActionsFournisseur.getChildren().addAll(Modifier, deleteButton);
+                ActionsFournisseur.alignmentProperty().set(Pos.CENTER);
+
                 deleteButton.getStyleClass().add("delete-btn");
                 imageview.getStyleClass().add("delete-icon");
 
@@ -496,27 +549,9 @@ public class Gestion extends Application {
                     FournisseurObjet fournisseur = getTableView().getItems().get(getIndex());
                     getTableView().getItems().remove(fournisseur);
                 });
-            }
-
-            @Override
-            protected void updateItem(Void item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty) {
-                    setGraphic(null);
-                } else {
-                    setGraphic(deleteButton);
-                }
-            }
-        });
-        // =============================MODIFIER UN FOURNISSEUR======================
-        TableColumn<FournisseurObjet, Void> ModifierFournisseur = new TableColumn<>("Modifier");
-        ModifierFournisseur.setCellFactory(param -> new TableCell<FournisseurObjet, Void>() {
-            private final Button Modifier = new Button("Modifier");
-
-            {
                 Modifier.getStyleClass().add("modify-btn");
                 ImageView iconModifier = new ImageView(
-                        new Image("file:src/asserts/edit_24dp_FFFFFF_FILL0_wght400_GRAD0_opsz24.png"));
+                        new Image("file:src/asserts/edit.png"));
                 Modifier.setGraphic(iconModifier);
 
                 Modifier.setOnAction(e -> {
@@ -602,15 +637,16 @@ public class Gestion extends Application {
                 if (empty) {
                     setGraphic(null);
                 } else {
-                    setGraphic(Modifier);
+                    setGraphic(ActionsFournisseur);
                 }
             }
         });
+        // =============================MODIFIER UN FOURNISSEUR======================
 
         tableFournisseur.setItems(observablesFournisseur);
         tableFournisseur.getColumns().addAll(ColumnIDfournisseur, ColumnNomFournisseur, ColumnEmailFourniseur,
-                DeleteFournisseur, ModifierFournisseur);
-        Fournisseur.getChildren().add(tableFournisseur);
+                DeleteFournisseur);
+        FinalFournisseur.getChildren().add(tableFournisseur);
 
         AjouterFournisseurButton.setOnAction(e -> {
             FournisseurObjet fournisseurobjet = new FournisseurObjet(IDFournisseurInput.getText(),
@@ -619,53 +655,60 @@ public class Gestion extends Application {
             observablesFournisseur.add(fournisseurobjet);
         });
         // ------------------TABLE DE BOARD SECTION-----------------
-        // the main page has to be on the board section
-        // ajouter le prix de chaque article
+
         VBox TableDeBoardMain = new VBox();
         TableDeBoardMain.getStyleClass().add("dashboard-main");
-
+        // Article total
         VBox TOtalArticles = new VBox();
-
         Label TOtalArticlesLabel = new Label("Nombre total d'articles");
         TOtalArticlesLabel.getStyleClass().add("stats-number-white");
-
         Label TOtalArticlesValue = new Label();
         TOtalArticlesValue.getStyleClass().add("stats-value");
-
         TOtalArticles.getChildren().addAll(TOtalArticlesLabel, TOtalArticlesValue);
-
         ImageView iconTotalArticles = new ImageView(
                 new Image("file:src/asserts/package.png"));
         iconTotalArticles.setFitWidth(50);
         iconTotalArticles.setFitHeight(50);
-
         HBox FinalTotalArticles = new HBox();
         FinalTotalArticles.getStyleClass().addAll("stats-card", "stats-card-primary");
         FinalTotalArticles.getChildren().addAll(iconTotalArticles, TOtalArticles);
 
-        Button TableDeBoard = new Button("Table de board");
-        TableDeBoard.getStyleClass().add("sidebar-button");
-
+        // Qunatite total
         VBox QuantiteTotal = new VBox();
-
         Label QuantiteTotalLabel = new Label("Quantité totale d'articles");
         QuantiteTotalLabel.getStyleClass().add("stats-number-white");
-
         Label QuantiteTotalValue = new Label();
         QuantiteTotalValue.getStyleClass().add("stats-value");
-
         QuantiteTotal.getChildren().addAll(QuantiteTotalLabel, QuantiteTotalValue);
-
         HBox FinalTotalQuantite = new HBox();
         FinalTotalQuantite.getStyleClass().addAll("stats-card", "stats-card-primary");
         ImageView iconQuantiteTotal = new ImageView(
                 new Image("file:src/asserts/trending-up.png"));
         iconQuantiteTotal.setFitWidth(50);
         iconQuantiteTotal.setFitHeight(50);
-        
         FinalTotalQuantite.getChildren().addAll(iconQuantiteTotal, QuantiteTotal);
+        // alert tableau de board
+        Label AlertLabel = new Label("Alertes de Stock");
+        AlertLabel.getStyleClass().add("stats-number-white");
 
-        TableDeBoardMain.getChildren().addAll(FinalTotalArticles, FinalTotalQuantite);
+        Label AlertValue = new Label();
+        AlertValue.getStyleClass().add("stats-value");
+
+        VBox AlertContainer = new VBox();
+        AlertContainer.getChildren().addAll(AlertLabel, AlertValue);
+        ImageView AlertIcon = new ImageView(
+                new Image("file:src/asserts/alert-triangle.png"));
+        AlertIcon.setFitWidth(50);
+        AlertIcon.setFitHeight(50);
+        HBox finalAlert = new HBox();
+        finalAlert.getStyleClass().addAll("stats-card", "stats-card-primary");
+
+        finalAlert.getChildren().addAll(AlertIcon, AlertContainer);
+
+        TableDeBoardMain.getChildren().addAll(FinalTotalArticles, FinalTotalQuantite, finalAlert);
+
+        Button TableDeBoard = new Button("Table de board");
+        TableDeBoard.getStyleClass().add("sidebar-button");
         // ----------------DECLARATION DES GRANDES PARTIES----------
         Label mainTitle = new Label("Application Gestion de Stock");
         mainTitle.getStyleClass().add("main-title");
@@ -704,10 +747,17 @@ public class Gestion extends Application {
             for (ArticleObjet article : observablesArticle) {
                 count += article.getQuantite();
             }
-            TOtalArticlesValue.setText(String.valueOf(count));
+            TOtalArticlesValue.setText(String.valueOf(observablesArticle.size()));
             QuantiteTotalValue.setText(String.valueOf(count));
             main.getChildren().clear();
             main.getChildren().setAll(TableDeBoardMain);
+
+            int AlertCount = 0;
+            for (ArticleObjet article : observablesArticle) {
+                if (article.getQuantite() < article.getSeuilAlerte())
+                    AlertCount++;
+            }
+            AlertValue.setText(String.valueOf(AlertCount));
 
             TableDeBoard.getStyleClass().add("active");
             toFournisseur.getStyleClass().remove("active");
@@ -716,14 +766,14 @@ public class Gestion extends Application {
         });
 
         toArticle.setOnAction(e -> {
-            main.getChildren().setAll(Article);
+            main.getChildren().setAll(ArticleFinal);
             toArticle.getStyleClass().add("active");
             toFournisseur.getStyleClass().remove("active");
             TableDeBoard.getStyleClass().remove("active");
         });
 
         toFournisseur.setOnAction(e -> {
-            main.getChildren().setAll(Fournisseur);
+            main.getChildren().setAll(FinalFournisseur);
             toFournisseur.getStyleClass().add("active");
             toArticle.getStyleClass().remove("active");
             TableDeBoard.getStyleClass().remove("active");
