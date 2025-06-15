@@ -1,4 +1,6 @@
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import javax.swing.border.LineBorder;
 import javafx.application.Application;
@@ -8,10 +10,12 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.TableView;
@@ -25,6 +29,7 @@ import javafx.stage.Stage;
 //---------Appeler les packages Fournisseurs et Articles
 import models.ArticleObjet;
 import models.FournisseurObjet;
+import models.MovementObjet;
 
 //-----------------------------------------------------------
 public class Gestion extends Application {
@@ -130,6 +135,7 @@ public class Gestion extends Application {
         // -------------------------------------------------
 
         VBox ArticleFinal = new VBox(20);
+        ArticleFinal.getStyleClass().add("content-container");
 
         ImageView AjouterArticleIcon = new ImageView(new Image("file:src/asserts/plus.png"));
         AjouterArticleIcon.setFitHeight(15);
@@ -182,62 +188,9 @@ public class Gestion extends Application {
         ColumnIDFOURNISSEURArticle.setCellValueFactory(new PropertyValueFactory<>("fournisseurid"));
         ColumnIDFOURNISSEURArticle.getStyleClass().add("table-column");
 
-        TableColumn<ArticleObjet, Void> ModifiedArticle = new TableColumn<>("Quantite");
-        ModifiedArticle.getStyleClass().add("table-column");
-
-        ModifiedArticle.setCellFactory(param -> new TableCell<ArticleObjet, Void>() {
-
-            private final HBox buttonsModifiedQuantity = new HBox();
-            private final Button IncrementQuantity = new Button("+");
-            private final Button DiscremenetQuantity = new Button("-");
-            private final Label QuantityVariable = new Label();
-
-            {
-                buttonsModifiedQuantity.getStyleClass().add("quantity-controls");
-                IncrementQuantity.getStyleClass().add("quantity-btn");
-                IncrementQuantity.getStyleClass().add("increment-btn");
-                DiscremenetQuantity.getStyleClass().add("quantity-btn");
-                DiscremenetQuantity.getStyleClass().add("decrement-btn");
-                QuantityVariable.getStyleClass().add("quantity-label");
-
-                buttonsModifiedQuantity.getChildren().addAll(DiscremenetQuantity, QuantityVariable, IncrementQuantity);
-
-                IncrementQuantity.setOnAction(e -> {
-                    ArticleObjet article = getTableView().getItems().get(getIndex());
-                    article.setQuantite(article.getQuantite() + 1);
-                    QuantityVariable.setText(String.valueOf(article.getQuantite()));
-                });
-                DiscremenetQuantity.setOnAction(e -> {
-                    ArticleObjet article = getTableView().getItems().get(getIndex());
-                    article.setQuantite(Math.max(0, article.getQuantite() - 1));
-                    QuantityVariable.setText(String.valueOf(article.getQuantite()));
-                    if (article.getQuantite() <= article.getSeuilAlerte()) {
-                        Alert alert = new Alert(AlertType.WARNING);
-                        alert.setTitle("Stock épuisé");
-                        alert.setHeaderText("Attention : Stock faible");
-                        alert.setContentText("La quantité de l'article \"" + article.getNom()
-                                + "\" a atteint ou est inférieure au seuil d'alerte (" + article.getSeuilAlerte()
-                                + "). Veuillez réapprovisionner le stock.");
-                        alert.getDialogPane().getStyleClass().add("alert");
-                        alert.getDialogPane().getStyleClass().add("warning-alert");
-                        alert.showAndWait();
-                        return;
-                    }
-                });
-            }
-
-            @Override
-            protected void updateItem(Void item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty) {
-                    setGraphic(null);
-                } else {
-                    ArticleObjet article = getTableView().getItems().get(getIndex());
-                    QuantityVariable.setText(String.valueOf(article.getQuantite()));
-                    setGraphic(buttonsModifiedQuantity);
-                }
-            }
-        });
+        TableColumn<ArticleObjet, Void> QuantiteArticleColumn = new TableColumn<>("Quantite");
+        QuantiteArticleColumn.setCellValueFactory(new PropertyValueFactory<>("quantite"));
+        QuantiteArticleColumn.getStyleClass().add("table-column");
 
         TableColumn<ArticleObjet, Void> DeleteArticle = new TableColumn<>("Actions");
         DeleteArticle.getStyleClass().add("table-column");
@@ -405,7 +358,7 @@ public class Gestion extends Application {
 
         tableArticle.setItems(observablesArticle);
         tableArticle.getColumns().addAll(ColumnNomArticle, ColumnReferenceArticle, ColumnIDFOURNISSEURArticle,
-                ModifiedArticle, ColumnCategorieArticle, ColumnSeuilArticle, DeleteArticle);
+                QuantiteArticleColumn, ColumnCategorieArticle, ColumnSeuilArticle, DeleteArticle);
 
         // -------------LIRE LES INPUTS ET CREER UN ARTICLE----------------
         ArticleFinal.getChildren().add(tableArticle);
@@ -476,6 +429,7 @@ public class Gestion extends Application {
 
         // -----------------------------------------------------------------------------
         VBox FinalFournisseur = new VBox(20);
+        FinalFournisseur.getStyleClass().add("content-container");
         ImageView AjouterFournisseurIcon = new ImageView(new Image("file:src/asserts/plus.png"));
         AjouterFournisseurIcon.setFitHeight(15);
         AjouterFournisseurIcon.setFitWidth(15);
@@ -502,7 +456,7 @@ public class Gestion extends Application {
             FournisseurStage.setScene(FournisseurScene);
             FournisseurStage.show();
         });
-          AnuulerFournisseurButton.setOnAction(param -> {
+        AnuulerFournisseurButton.setOnAction(param -> {
             FournisseurStage.close();
 
         });
@@ -656,7 +610,7 @@ public class Gestion extends Application {
         });
         // ------------------TABLE DE BOARD SECTION-----------------
 
-        VBox TableDeBoardMain = new VBox();
+        VBox TableDeBoardMain = new VBox(20);
         TableDeBoardMain.getStyleClass().add("dashboard-main");
         // Article total
         VBox TOtalArticles = new VBox();
@@ -707,11 +661,15 @@ public class Gestion extends Application {
 
         TableDeBoardMain.getChildren().addAll(FinalTotalArticles, FinalTotalQuantite, finalAlert);
 
-        Button TableDeBoard = new Button("Table de board");
+        ImageView TableDeBoardIcon = new ImageView(new Image("file:src/asserts/dashboard-alt.png"));
+        TableDeBoardIcon.getStyleClass().add("sidebar-icon");
+
+        HBox TableDeBoardButtonItems = new HBox(8);
+        TableDeBoardButtonItems.getChildren().addAll(TableDeBoardIcon, new Label("Table de board"));
+
+        Button TableDeBoard = new Button();
+        TableDeBoard.setGraphic(TableDeBoardButtonItems);
         TableDeBoard.getStyleClass().add("sidebar-button");
-        // ----------------DECLARATION DES GRANDES PARTIES----------
-        Label mainTitle = new Label("Application Gestion de Stock");
-        mainTitle.getStyleClass().add("main-title");
 
         // TO ARTICLE-----------------------------
         ImageView ArticleIcon = new ImageView(
@@ -720,24 +678,262 @@ public class Gestion extends Application {
 
         Button toArticle = new Button(" Articles");
         toArticle.getStyleClass().add("sidebar-button");
+        toArticle.setAlignment(Pos.CENTER_LEFT);
         toArticle.setGraphic(ArticleIcon);
 
         // TO FOURNISSEUR ---------------------------
         Button toFournisseur = new Button("Fournisseur");
         toFournisseur.getStyleClass().add("sidebar-button");
         ImageView FournisseurIcon = new ImageView(
-                new Image("file:src/asserts/local_shipping_24dp_EA3323_FILL0_wght400_GRAD0_opsz24.png"));
+                new Image("file:src/asserts/local_shipping_22dp_06C11C_FILL0_wght400_GRAD0_opsz24.png"));
         FournisseurIcon.getStyleClass().add("sidebar-icon");
         toFournisseur.setGraphic(FournisseurIcon);
-        // ---GESTION DE MOVEMENT ----------------------
-        Button GestionDeMovemenet = new Button("Gestion de Movement");
-        GestionDeMovemenet.getStyleClass().add("sidebar-button");
+        toFournisseur.setAlignment(Pos.CENTER_LEFT);
 
-        // -----------------------
+        // ---GESTION DE MOVEMENT ----------------------
+        Button toGestionDeMovemenet = new Button("Gestion de Movement");
+        toGestionDeMovemenet.getStyleClass().add("sidebar-button");
+        ImageView GestionDeMovementIcon = new ImageView(
+                new Image("file:src/asserts/warehouse_22dp_0000F5_FILL0_wght400_GRAD0_opsz24.png"));
+        toGestionDeMovemenet.setGraphic(GestionDeMovementIcon);
+        toGestionDeMovemenet.setAlignment(Pos.CENTER_LEFT);
+        // -----------------GESTION DE MOVEMENT-------------------------
+        VBox GestionDeMovemenetMain = new VBox(20);
+
+        Button AjouterMovement = new Button();
+        ImageView AjouterMovementIcon = new ImageView(new Image("file:src/asserts/plus.png"));
+        AjouterMovementIcon.setFitHeight(15);
+        AjouterMovementIcon.setFitWidth(15);
+        Label AjouterMovementButtonLabel = new Label("Ajouter Movement");
+        AjouterMovementButtonLabel.getStyleClass().add("button-label");
+        HBox AjouterMovementButtonItems = new HBox(8);
+        AjouterMovementButtonItems.getChildren().addAll(AjouterMovementIcon, AjouterMovementButtonLabel);
+        AjouterMovementButtonItems.setAlignment(Pos.CENTER);
+
+        AjouterMovement.setGraphic(AjouterMovementButtonItems);
+        AjouterMovement.getStyleClass().add("button-ajouter");
+
+        GestionDeMovemenetMain.getChildren().add(AjouterMovement);
+        VBox Movement = new VBox();
+        Movement.getStyleClass().add("form-container");
+
+        // Ajouter les input et les labels de gestion de movement
+        VBox CategorieArticleMovement = new VBox();
+        CategorieArticleMovement.getStyleClass().add("form-group");
+        Label labelCategorieMovement = new Label("Article");// just pour peciser article souhaite pour mo=vement
+        labelCategorieMovement.getStyleClass().add("form-label");
+        ComboBox<String> ajouterCategorieArticleMovement = new ComboBox<>();
+
+        ajouterCategorieArticleMovement.getStyleClass().add("form-textfield");
+        ajouterCategorieArticleMovement.setPromptText("Selectioner un article");
+        CategorieArticleMovement.getChildren().addAll(labelCategorieMovement, ajouterCategorieArticleMovement);
+
+        // ----------------------TYPE DE MOVEMENT---------------------
+        VBox TypeMovement = new VBox();
+        TypeMovement.getStyleClass().add("form-group");
+        Label labelTypeMovement = new Label("Type de movement ");
+        labelTypeMovement.getStyleClass().add("form-label");
+        ComboBox<String> AjouterTypeDeMovementInput = new ComboBox<>();
+        AjouterTypeDeMovementInput.getItems().addAll("Entree(Reception)", "Sortie(vente)");
+        AjouterTypeDeMovementInput.getStyleClass().add("form-textfield");
+        AjouterTypeDeMovementInput.setPromptText("Selectioner Type de movement");
+        TypeMovement.getChildren().addAll(labelTypeMovement, AjouterTypeDeMovementInput);
+
+        // ----------------------Quantite de Movement---------------------
+        VBox QuantiteMovement = new VBox();
+        QuantiteMovement.getStyleClass().add("form-group");
+        Label LabelQuantiteMovement = new Label("Quantite");
+        LabelQuantiteMovement.getStyleClass().add("form-label");
+        TextField QuantiteMovementInput = new TextField();
+        QuantiteMovementInput.getStyleClass().add("form-textfield");
+        QuantiteMovementInput.setPromptText("Entrer Qunatite");
+        QuantiteMovement.getChildren().addAll(LabelQuantiteMovement, QuantiteMovementInput);
+        // ----------------------Commentaire ---------------------
+        VBox CommentaireMovement = new VBox();
+        CommentaireMovement.getStyleClass().add("form-group");
+        Label LabelCommentaireMovement = new Label("Commentaire");
+        LabelCommentaireMovement.getStyleClass().add("form-label");
+        TextField CommentaireMovemnetInput = new TextField();
+        CommentaireMovemnetInput.getStyleClass().add("form-textfield");
+        CommentaireMovemnetInput.setPromptText("Motif de Movemnet");
+        CommentaireMovement.getChildren().addAll(LabelCommentaireMovement, CommentaireMovemnetInput);
+        // ----------bouttons ajouter/annuler
+        HBox Bouttons_Ajouter_AnullerMovemnet = new HBox();
+        Bouttons_Ajouter_AnullerMovemnet.getStyleClass().add("button-container");
+        Button AjouterBouttonMovement = new Button("Ajouter");
+        AjouterBouttonMovement.getStyleClass().add("btn-primary");
+        Button AnullerBouttonMovement = new Button("Annuler");
+        ImageView iconCANCEMovemnet = new ImageView(
+                new Image("file:src/asserts/close_24dp_367AF3_FILL0_wght400_GRAD0_opsz24.png"));
+        AnullerBouttonMovement.setGraphic(iconCANCEMovemnet);
+        AnullerBouttonMovement.getStyleClass().add("btn-secondary");
+        Bouttons_Ajouter_AnullerMovemnet.getChildren().addAll(AnullerBouttonMovement, AjouterBouttonMovement);
+
+        Movement.getChildren().addAll(CategorieArticleMovement, TypeMovement, QuantiteMovement, CommentaireMovement,
+                Bouttons_Ajouter_AnullerMovemnet);
+
+        Scene MovementScene = new Scene(Movement);
+        Stage MovementStage = new Stage();
+        // c est boutton de fentre
+        ObservableList<MovementObjet> ListMovement = FXCollections.observableArrayList();
+
+        AjouterBouttonMovement.setOnAction(e -> {
+            String articlereference = ajouterCategorieArticleMovement.getValue();
+            MovementObjet movementobjet = new MovementObjet(Integer.parseInt(QuantiteMovementInput.getText()),
+                    AjouterTypeDeMovementInput.getValue(), CommentaireMovemnetInput.getText(), LocalDate.now(),
+                    articlereference);
+            for (ArticleObjet article : observablesArticle) {
+                String Reference_Nom = article.getNom() + "-" + article.getReference();
+                if (Reference_Nom.equals(ajouterCategorieArticleMovement.getValue())) {
+
+                    if (AjouterTypeDeMovementInput.getValue().equals("Sortie(vente)")) {
+                        if (article.getQuantite() >= Integer.parseInt(QuantiteMovementInput.getText())) {
+
+                            article.setQuantite(
+                                    article.getQuantite() - Integer.parseInt(QuantiteMovementInput.getText()));
+                            ListMovement.add(movementobjet);
+
+                            tableArticle.refresh();
+                            MovementStage.close();
+
+                        } else {
+                            Alert QuantiteInsufisante = new Alert(AlertType.INFORMATION);
+                            QuantiteInsufisante.setTitle("ERROR");
+                            QuantiteInsufisante.setContentText("Quantite Insufisante");
+                            QuantiteInsufisante.setHeaderText("Error");
+                            QuantiteInsufisante.showAndWait();
+                        }
+                    } else if ((AjouterTypeDeMovementInput.getValue().equals("Entree(Reception)"))) {
+
+                        article.setQuantite(
+                                article.getQuantite() + Integer.parseInt(QuantiteMovementInput.getText()));
+                        tableArticle.refresh();
+                        ListMovement.add(movementobjet);
+
+                        MovementStage.close();
+
+                    }
+                }
+
+            }
+
+        });
+        AnullerBouttonMovement.setOnAction(e -> {
+            MovementStage.close();
+        });
+
+        AjouterMovement.setOnAction(e -> {
+            if (observablesArticle.size() != 0) {
+                for (ArticleObjet article : observablesArticle) {
+                    if (!ajouterCategorieArticleMovement.getItems()
+                            .contains(article.getNom() + "-" + article.getReference()))
+                        ajouterCategorieArticleMovement.getItems().add(article.getNom() + "-" + article.getReference());
+                }
+                MovementScene.getStylesheets().add(getClass().getResource("styles.css").toExternalForm());
+                MovementStage.setTitle("Nouveau Movemnet de Stock");
+                MovementStage.setScene(MovementScene);
+                MovementStage.show();
+            } else {
+                Alert EmptyArticle = new Alert(AlertType.INFORMATION);
+                EmptyArticle.setTitle("Alert");
+                EmptyArticle.setHeaderText("error");
+                EmptyArticle.setContentText("Vous devez ajouter des Articles en premier!!");
+                EmptyArticle.showAndWait();
+            }
+        });
+
+        TableView<MovementObjet> TableMovement = new TableView<>();
+        TableMovement.getStyleClass().add("table-view");
+
+        TableColumn<MovementObjet, String> dateMovement = new TableColumn<>("DATE");
+        dateMovement.setCellValueFactory(new PropertyValueFactory("date"));
+        dateMovement.setStyle("-fx-alignment: CENTER;");
+
+        TableColumn<MovementObjet, String> article_movement = new TableColumn<>("ARTICLE");
+        article_movement.setCellValueFactory(new PropertyValueFactory("article_reference"));
+        article_movement.setStyle("-fx-alignment: CENTER;");
+
+        TableColumn<MovementObjet, String> TypeMovementColumn = new TableColumn<>("TYPE");
+        TypeMovementColumn.setCellValueFactory(new PropertyValueFactory("type_movement"));
+        TypeMovementColumn.setCellFactory(param -> new TableCell<MovementObjet, String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if (empty || item == null) {
+                    setGraphic(null);
+                } else {
+                    HBox typeSign = new HBox();
+                    Label typeLabel = new Label(item);
+
+                    if (item.equals("Entree(Reception)")) {
+
+                        typeLabel.setStyle("-fx-text-fill: green;");
+                    } else if (item.equals("Sortie(vente)")) {
+
+                        typeLabel.setStyle("-fx-text-fill: red;");
+
+                    }
+
+                    typeSign.getChildren().addAll(typeLabel);
+                    typeSign.setAlignment(Pos.CENTER);
+                    setGraphic(typeSign);
+                    setAlignment(Pos.CENTER);
+                }
+            }
+        });
+        TypeMovementColumn.setStyle("-fx-alignment: CENTER;");
+
+        TableColumn<MovementObjet, Integer> QuntiteMovementColumn = new TableColumn<>("QUANTITE");
+        QuntiteMovementColumn.setCellValueFactory(new PropertyValueFactory("quantite"));
+        QuntiteMovementColumn.setStyle("-fx-alignment: CENTER;");
+        QuntiteMovementColumn.setCellFactory(param -> new TableCell<MovementObjet, Integer>() {
+            @Override
+            protected void updateItem(Integer item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if (empty || item == null) {
+                    setGraphic(null);
+                } else {
+                    HBox typeSign = new HBox();
+                    Label signLabel = new Label();
+                    Label typeLabel = new Label(String.valueOf(item));
+                    MovementObjet mov = getTableView().getItems().get(getIndex());
+                    if (mov.getType_movement().equals("Entree(Reception)")) {
+                        signLabel.setText("+");
+                        signLabel.setStyle("-fx-text-fill: green;");
+                        typeLabel.setStyle("-fx-text-fill: green;");
+                    } else if (mov.getType_movement().equals("Sortie(vente)")) {
+                        signLabel.setText("-");
+                        signLabel.setStyle("-fx-text-fill: red;");
+                        typeLabel.setStyle("-fx-text-fill: red;");
+
+                    }
+
+                    typeSign.getChildren().addAll(signLabel, typeLabel);
+                    typeSign.setAlignment(Pos.CENTER);
+                    setGraphic(typeSign);
+                    setAlignment(Pos.CENTER);
+                }
+            }
+        });
+
+        TableColumn<MovementObjet, String> CommentaireMovementColumn = new TableColumn<>("COMMENTAIRE");
+        CommentaireMovementColumn.setCellValueFactory(new PropertyValueFactory("commentaire"));
+        CommentaireMovementColumn.setStyle("-fx-alignment: CENTER;");
+
+        TableMovement.setItems(ListMovement);
+        TableMovement.getColumns().addAll(dateMovement, article_movement, TypeMovementColumn, QuntiteMovementColumn,
+                CommentaireMovementColumn);
+        GestionDeMovemenetMain.getChildren().add(TableMovement);
+        // -----------------------BARRRE LATERRALLE------------------------------
         VBox BarreLateralle = new VBox();
         BarreLateralle.getStyleClass().add("sidebar");
-        BarreLateralle.getChildren().addAll(TableDeBoard, toArticle, toFournisseur, GestionDeMovemenet);
-
+        BarreLateralle.getChildren().addAll(TableDeBoard, toArticle, toFournisseur, toGestionDeMovemenet);
+        BarreLateralle.setAlignment(Pos.TOP_LEFT);
+        // ----------------DECLARATION DES GRANDES PARTIES----------
+        Label mainTitle = new Label("Application Gestion de Stock");
+        mainTitle.getStyleClass().add("main-title");
         // --------------------
         VBox main = new VBox();
         main.getStyleClass().add("content-area");
@@ -762,6 +958,7 @@ public class Gestion extends Application {
             TableDeBoard.getStyleClass().add("active");
             toFournisseur.getStyleClass().remove("active");
             toArticle.getStyleClass().remove("active");
+            toGestionDeMovemenet.getStyleClass().remove("active");
 
         });
 
@@ -770,6 +967,8 @@ public class Gestion extends Application {
             toArticle.getStyleClass().add("active");
             toFournisseur.getStyleClass().remove("active");
             TableDeBoard.getStyleClass().remove("active");
+            toGestionDeMovemenet.getStyleClass().remove("active");
+
         });
 
         toFournisseur.setOnAction(e -> {
@@ -777,8 +976,15 @@ public class Gestion extends Application {
             toFournisseur.getStyleClass().add("active");
             toArticle.getStyleClass().remove("active");
             TableDeBoard.getStyleClass().remove("active");
+            toGestionDeMovemenet.getStyleClass().remove("active");
         });
-
+        toGestionDeMovemenet.setOnAction(e -> {
+            main.getChildren().setAll(GestionDeMovemenetMain);
+            toGestionDeMovemenet.getStyleClass().add("active");
+            toFournisseur.getStyleClass().remove("active");
+            toArticle.getStyleClass().remove("active");
+            TableDeBoard.getStyleClass().remove("active");
+        });
         // -------------------------------
         HBox root = new HBox();
         root.getStyleClass().add("main-container");
