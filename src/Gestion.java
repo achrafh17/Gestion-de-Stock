@@ -1,6 +1,18 @@
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import org.bson.Document;
+import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
+
+import static com.mongodb.client.model.Filters.eq;
+import com.mongodb.client.model.Filters;
 
 import javax.swing.border.LineBorder;
 import javafx.application.Application;
@@ -26,15 +38,37 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+import io.github.cdimascio.dotenv.Dotenv;
+
 //---------Appeler les packages Fournisseurs et Articles
 import models.ArticleObjet;
 import models.FournisseurObjet;
 import models.MovementObjet;
+import java.util.Timer;
+import java.util.TimerTask;
 
 //-----------------------------------------------------------
 public class Gestion extends Application {
     @Override
     public void start(Stage stage) {
+        // ---------BASE DE DONNNS---------------------------
+      
+            Dotenv dotenv = Dotenv.load();
+            String user = dotenv.get("DB_USER");
+            String password = dotenv.get("DB_PASSWORD");
+            String url = "mongodb+srv://" + user + ":" + password
+                    + "@cluster0.lsxjh.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+            MongoClient mongoclient = MongoClients.create(url);
+            MongoDatabase database = mongoclient.getDatabase("Gestion_De_Stock");
+            MongoCollection<Document> ArticleMongo = database.getCollection("Article");
+            MongoCollection<Document> FourisseurMongo = database.getCollection("Fournisseur");
+            MongoCollection<Document> MovementMongo = database.getCollection("Movement");
+            System.out.println("Base de donne connectee");
+
+       
+
+        // --------------------------------------------------
+
         Label label = new Label();
         Label TitleArticle = new Label("Ajouter un nouvel Article");
         TitleArticle.getStyleClass().add("section-title");
@@ -77,14 +111,16 @@ public class Gestion extends Application {
         labelQuantiteArticle.getStyleClass().add("form-label");
         TextField QuantiteArticle = new TextField();
         QuantiteArticle.textProperty().addListener((observable, oldvalue, newvalue) -> {
-            if (!newvalue.matches("\\d+")) {
-                Alert alert = new Alert(AlertType.INFORMATION);
-                alert.setTitle("Erreur de saisie");
-                alert.setHeaderText("Erreur de saisie");
-                alert.setContentText("Veuillez entrer uniquement des chiffres pour la quantité.");
-                alert.getDialogPane().getStyleClass().add("alert");
-                alert.showAndWait();
-            }
+          
+                if (!newvalue.matches("\\d+")) {
+                    Alert alert = new Alert(AlertType.INFORMATION);
+                    alert.setTitle("Erreur de saisie");
+                    alert.setHeaderText("Erreur de saisie");
+                    alert.setContentText("Veuillez entrer uniquement des chiffres pour la quantité.");
+                    alert.getDialogPane().getStyleClass().add("alert");
+                    alert.showAndWait();
+                }
+           
         });
         QuantiteArticle.getStyleClass().add("form-textfield");
         QuantiteArticle.setPromptText("Quantite d Article");
@@ -97,13 +133,18 @@ public class Gestion extends Application {
         labelSeuilAlert.getStyleClass().add("form-label");
         TextField SeuilAlertinput = new TextField();
         SeuilAlertinput.textProperty().addListener((observable, oldvalue, newvalue) -> {
-            if (!newvalue.matches("\\d+")) {
-                Alert alert = new Alert(AlertType.INFORMATION);
-                alert.setTitle("Erreur de saisie");
-                alert.setHeaderText("Erreur de saisie");
-                alert.setContentText("Veuillez entrer uniquement des chiffres pour le seuil.");
-                alert.getDialogPane().getStyleClass().add("alert");
-                alert.showAndWait();
+            try {
+                if (!newvalue.matches("\\d+")) {
+                    Alert alert = new Alert(AlertType.INFORMATION);
+                    alert.setTitle("Erreur de saisie");
+                    alert.setHeaderText("Erreur de saisie");
+                    alert.setContentText("Veuillez entrer uniquement des chiffres pour le seuil.");
+                    alert.getDialogPane().getStyleClass().add("alert");
+                    alert.showAndWait();
+                }
+            } catch (Exception err) {
+                System.out.println("problm de type de  Seuil");
+
             }
         });
         SeuilAlertinput.getStyleClass().add("form-textfield");
@@ -208,8 +249,17 @@ public class Gestion extends Application {
                 deleteIcon.getStyleClass().add("delete-icon");
 
                 deleteButton.setOnAction(e -> {
-                    ArticleObjet article = getTableView().getItems().get(getIndex());
-                    getTableView().getItems().remove(article);
+                    try {
+                        ArticleObjet article = getTableView().getItems().get(getIndex());
+                        getTableView().getItems().remove(article);
+                        Bson filter = Filters.eq("_id", article.getId());
+                        ArticleMongo.deleteOne(filter);
+                    } catch (Exception err) {
+                        showAlert("Une erreur est survenue lors de la suppression d article");
+                        System.out.println("Erreur lors de la suppression d article : " + err);
+
+                    }
+
                 });
                 Modifier.getStyleClass().add("modify-btn");
                 ImageView iconModifier = new ImageView(
@@ -220,6 +270,7 @@ public class Gestion extends Application {
                     Modifier.getStyleClass().add("modify-btn");
 
                     ArticleObjet article = getTableView().getItems().get(getIndex());
+
                     VBox windowRootArticle = new VBox();
                     windowRootArticle.getStyleClass().addAll("modification-window", "form-container");
                     // les input sont deja remplis avec les anciens valeurs de l article
@@ -317,15 +368,27 @@ public class Gestion extends Application {
                     modifierFenetre.setScene(testt);
                     modifierFenetre.show();
                     EnregistrerFenetre.setOnAction(event -> {
-                        // Mettre a jour les attributs de l article avec les nouvelles valeurs
-                        article.setNom(NomArticleModifierInput.getText());
-                        article.setReference(ReferenceArticleModifierInput.getText());
-                        article.setCategorie(CategorieArticleModifierInput.getText());
-                        article.setQuantite(Integer.parseInt(QuantiteArticleModifierInput.getText()));
-                        article.setSeuilAlerte(Integer.parseInt(SeuilArticleModifierInput.getText()));
-                        article.setFournisseurid(FournisseurIDArticleModifierInput.getText());
-                        tableArticle.refresh();
-                        modifierFenetre.close();
+
+                        try {
+                            article.setNom(NomArticleModifierInput.getText());
+                            article.setReference(ReferenceArticleModifierInput.getText());
+                            article.setCategorie(CategorieArticleModifierInput.getText());
+                            article.setQuantite(Integer.parseInt(QuantiteArticleModifierInput.getText()));
+                            article.setSeuilAlerte(Integer.parseInt(SeuilArticleModifierInput.getText()));
+                            article.setFournisseurid(FournisseurIDArticleModifierInput.getText());
+
+                            Bson filter = Filters.eq("_id", article.getId());
+
+                            Document updateArticle = new Document("$set", article.toDocument());
+                            ArticleMongo.updateOne(filter, updateArticle);
+
+                            tableArticle.refresh();
+                            modifierFenetre.close();
+                        } catch (Exception err) {
+                            showAlert("Une erreur est survenue lors de la modification d article");
+                            System.out.println("Erreur lors de la modificarion  d article : " + err);
+                        }
+
                     });
                     AnullerFenetreArticle.setOnAction(event -> {
                         tableArticle.refresh();
@@ -359,22 +422,50 @@ public class Gestion extends Application {
         tableArticle.setItems(observablesArticle);
         tableArticle.getColumns().addAll(ColumnNomArticle, ColumnReferenceArticle, ColumnIDFOURNISSEURArticle,
                 QuantiteArticleColumn, ColumnCategorieArticle, ColumnSeuilArticle, DeleteArticle);
+        try {
+            for (Document doc : ArticleMongo.find()) {
+                ArticleObjet articleobjet = new ArticleObjet(doc.getString("NomArticle"),
+                        doc.getString("ReferenceArticle"),
+                        doc.getString("CategorieArticle"),
+                        doc.getInteger("Quantite", 0),
+                        doc.getInteger("SeuilAlert", 0),
+                        doc.getString("IDFournisseur"));
+                articleobjet.setId(doc.getObjectId("_id"));
+                observablesArticle.add(articleobjet);
+                tableArticle.refresh();
+            }
+        } catch (Exception err) {
+            showAlert("Une erreur est survenue lors chargement de donnees");
+            System.out.println("Erreur est survenue lors chargement de donnees" + err);
+        }
 
         // -------------LIRE LES INPUTS ET CREER UN ARTICLE----------------
         ArticleFinal.getChildren().add(tableArticle);
 
         AjouterBoutton.setOnAction(e -> {
-            ArticleObjet articleobjet = new ArticleObjet(
-                    ajouterNomArticle.getText(),
-                    ajouterReferenceArticle.getText(),
-                    CategorieArticle.getText(),
-                    Integer.parseInt(QuantiteArticle.getText()), Integer.parseInt(SeuilAlertinput.getText()),
-                    FournisseurIDArticle.getText());
-            observablesArticle.add(articleobjet);
-            ajouterNomArticle.setText("");
-            ajouterReferenceArticle.setText("");
-            CategorieArticle.setText("");
-            ArticleStage.close();
+            try {
+                ArticleObjet ArticleInsert = new ArticleObjet(ajouterNomArticle.getText(),
+                        ajouterReferenceArticle.getText(),
+                        CategorieArticle.getText(),
+                        Integer.parseInt(QuantiteArticle.getText()), Integer.parseInt(SeuilAlertinput.getText()),
+                        FournisseurIDArticle.getText());
+
+                Document docArticle = ArticleInsert.toDocument();
+
+                ArticleMongo.insertOne(docArticle);
+
+                observablesArticle.add(ArticleInsert);
+                ajouterNomArticle.setText("");
+                ajouterReferenceArticle.setText("");
+                CategorieArticle.setText("");
+
+                // -------------
+
+                ArticleStage.close();
+            } catch (Exception err) {
+                showAlert("Une erreur est survenue lors de la creation  d article");
+                System.out.println("Erreur lors de la creation d article : " + err);
+            }
 
         });
 
@@ -451,10 +542,15 @@ public class Gestion extends Application {
         Scene FournisseurScene = new Scene(Fournisseur);
         Stage FournisseurStage = new Stage();
         AjouterFourrnisseur.setOnAction(e -> {
-            FournisseurScene.getStylesheets().add(getClass().getResource("styles.css").toExternalForm());
-            FournisseurStage.setTitle("Ajouter Fournisseur");
-            FournisseurStage.setScene(FournisseurScene);
-            FournisseurStage.show();
+            try {
+                FournisseurScene.getStylesheets().add(getClass().getResource("styles.css").toExternalForm());
+                FournisseurStage.setTitle("Ajouter Fournisseur");
+                FournisseurStage.setScene(FournisseurScene);
+                FournisseurStage.show();
+            } catch (Exception err) {
+                showAlert("Une erreur est survenue");
+                System.out.println("Erreur Fournisseur " + err);
+            }
         });
         AnuulerFournisseurButton.setOnAction(param -> {
             FournisseurStage.close();
@@ -500,8 +596,15 @@ public class Gestion extends Application {
                 imageview.getStyleClass().add("delete-icon");
 
                 deleteButton.setOnAction(e -> {
-                    FournisseurObjet fournisseur = getTableView().getItems().get(getIndex());
-                    getTableView().getItems().remove(fournisseur);
+                    try {
+                        FournisseurObjet fournisseur = getTableView().getItems().get(getIndex());
+                        Bson filter = Filters.eq("_id", fournisseur.getObjectId());
+                        FourisseurMongo.deleteOne(filter);
+                        getTableView().getItems().remove(fournisseur);
+                    } catch (Exception err) {
+                        showAlert("Une erreur est survenue lors de la suppression de fournisseur");
+                        System.out.println("Erreur lors de la suppression de fournisseur : " + err);
+                    }
                 });
                 Modifier.getStyleClass().add("modify-btn");
                 ImageView iconModifier = new ImageView(
@@ -509,73 +612,90 @@ public class Gestion extends Application {
                 Modifier.setGraphic(iconModifier);
 
                 Modifier.setOnAction(e -> {
-                    FournisseurObjet fournisseur = getTableView().getItems().get(getIndex());
-                    VBox windowRootFournisseur = new VBox();
-                    windowRootFournisseur.getStyleClass().addAll("modification-window", "form-container");
-                    // les input sont deja remplis avec les anciens valeurs de l article
-                    // Nom Fournisseur
-                    VBox NomFournisseurModifier = new VBox();
-                    NomFournisseurModifier.getStyleClass().add("form-group");
-                    Label NomFournisseurModifierLabel = new Label("Nom de Fournisseur");
-                    NomFournisseurModifierLabel.getStyleClass().add("form-label");
-                    TextField NomFournisseurModifierInput = new TextField(fournisseur.getNomFournisseur());
-                    NomFournisseurModifierInput.getStyleClass().add("form-textfield");
-                    NomFournisseurModifierInput.setPromptText("Entrez le nouveau nom de Fournisseur");
-                    NomFournisseurModifier.getChildren().addAll(NomFournisseurModifierLabel,
-                            NomFournisseurModifierInput);
-                    // Email Fournisseur
-                    VBox EmailFournisseurModifier = new VBox();
-                    EmailFournisseurModifier.getStyleClass().add("form-group");
-                    Label EmailFournisseurModifierLabel = new Label("Email de Fournisseur");
-                    EmailFournisseurModifierLabel.getStyleClass().add("form-label");
-                    TextField EmailFournisseurModifierInput = new TextField(fournisseur.getEmailFournisseur());
-                    EmailFournisseurModifierInput.getStyleClass().add("form-textfield");
-                    EmailFournisseurModifierInput.setPromptText("Entrez le nouvelle mail de Fournisseur");
-                    EmailFournisseurModifier.getChildren().addAll(EmailFournisseurModifierLabel,
-                            EmailFournisseurModifierInput);
-                    // ID Fournisseur
-                    VBox IdFournisseurModifier = new VBox();
-                    IdFournisseurModifier.getStyleClass().add("form-group");
-                    Label IdFournisseurModifierLabel = new Label("ID de Fournisseur");
-                    IdFournisseurModifierLabel.getStyleClass().add("form-label");
-                    TextField IdFournisseurModifierInput = new TextField(fournisseur.getId());
-                    IdFournisseurModifierInput.getStyleClass().add("form-textfield");
-                    IdFournisseurModifierInput.setPromptText("Entrez la nouvelle id de fournisseur");
-                    IdFournisseurModifier.getChildren().addAll(IdFournisseurModifierLabel, IdFournisseurModifierInput);
+                    try {
+                        FournisseurObjet fournisseur = getTableView().getItems().get(getIndex());
+                        VBox windowRootFournisseur = new VBox();
+                        windowRootFournisseur.getStyleClass().addAll("modification-window", "form-container");
 
-                    HBox EnregistrerAnullerModifierFournisseur = new HBox();
+                        VBox NomFournisseurModifier = new VBox();
+                        NomFournisseurModifier.getStyleClass().add("form-group");
+                        Label NomFournisseurModifierLabel = new Label("Nom de Fournisseur");
+                        NomFournisseurModifierLabel.getStyleClass().add("form-label");
+                        TextField NomFournisseurModifierInput = new TextField(fournisseur.getNomFournisseur());
+                        NomFournisseurModifierInput.getStyleClass().add("form-textfield");
+                        NomFournisseurModifierInput.setPromptText("Entrez le nouveau nom de Fournisseur");
+                        NomFournisseurModifier.getChildren().addAll(NomFournisseurModifierLabel,
+                                NomFournisseurModifierInput);
+                        // Email Fournisseur
+                        VBox EmailFournisseurModifier = new VBox();
+                        EmailFournisseurModifier.getStyleClass().add("form-group");
+                        Label EmailFournisseurModifierLabel = new Label("Email de Fournisseur");
+                        EmailFournisseurModifierLabel.getStyleClass().add("form-label");
+                        TextField EmailFournisseurModifierInput = new TextField(fournisseur.getEmailFournisseur());
+                        EmailFournisseurModifierInput.getStyleClass().add("form-textfield");
+                        EmailFournisseurModifierInput.setPromptText("Entrez le nouvelle mail de Fournisseur");
+                        EmailFournisseurModifier.getChildren().addAll(EmailFournisseurModifierLabel,
+                                EmailFournisseurModifierInput);
+                        // ID Fournisseur
+                        VBox IdFournisseurModifier = new VBox();
+                        IdFournisseurModifier.getStyleClass().add("form-group");
+                        Label IdFournisseurModifierLabel = new Label("ID de Fournisseur");
+                        IdFournisseurModifierLabel.getStyleClass().add("form-label");
+                        TextField IdFournisseurModifierInput = new TextField(fournisseur.getId());
+                        IdFournisseurModifierInput.getStyleClass().add("form-textfield");
+                        IdFournisseurModifierInput.setPromptText("Entrez la nouvelle id de fournisseur");
+                        IdFournisseurModifier.getChildren().addAll(IdFournisseurModifierLabel,
+                                IdFournisseurModifierInput);
 
-                    ImageView iconSAVE = new ImageView(
-                            new Image("file:src/asserts/save_24dp_FFFFFF_FILL0_wght400_GRAD0_opsz24.png"));
-                    Button EnregistrerFenetre = new Button("Enregistre");
-                    EnregistrerFenetre.setGraphic(iconSAVE);
-                    EnregistrerFenetre.getStyleClass().add("btn-primary");
+                        HBox EnregistrerAnullerModifierFournisseur = new HBox();
 
-                    ImageView iconCANCEL = new ImageView(
-                            new Image("file:src/asserts/close_24dp_367AF3_FILL0_wght400_GRAD0_opsz24.png"));
-                    Button AnullerFenetre = new Button("Anuler");
-                    AnullerFenetre.setGraphic(iconCANCEL);
-                    AnullerFenetre.getStyleClass().add("btn-secondary");
+                        ImageView iconSAVE = new ImageView(
+                                new Image("file:src/asserts/save_24dp_FFFFFF_FILL0_wght400_GRAD0_opsz24.png"));
+                        Button EnregistrerFenetre = new Button("Enregistre");
+                        EnregistrerFenetre.setGraphic(iconSAVE);
+                        EnregistrerFenetre.getStyleClass().add("btn-primary");
 
-                    EnregistrerAnullerModifierFournisseur.getChildren().addAll(AnullerFenetre, EnregistrerFenetre);
-                    EnregistrerAnullerModifierFournisseur.getStyleClass().add("button-container");
+                        ImageView iconCANCEL = new ImageView(
+                                new Image("file:src/asserts/close_24dp_367AF3_FILL0_wght400_GRAD0_opsz24.png"));
+                        Button AnullerFenetre = new Button("Anuler");
+                        AnullerFenetre.setGraphic(iconCANCEL);
+                        AnullerFenetre.getStyleClass().add("btn-secondary");
 
-                    windowRootFournisseur.getChildren().addAll(IdFournisseurModifier, NomFournisseurModifier,
-                            EmailFournisseurModifier, EnregistrerAnullerModifierFournisseur);
+                        EnregistrerAnullerModifierFournisseur.getChildren().addAll(AnullerFenetre, EnregistrerFenetre);
+                        EnregistrerAnullerModifierFournisseur.getStyleClass().add("button-container");
 
-                    Stage modifierFenetre = new Stage();
-                    modifierFenetre.setTitle("Modifier le fournisseur");
-                    Scene testt = new Scene(windowRootFournisseur);
-                    testt.getStylesheets().add(getClass().getResource("styles.css").toExternalForm());
+                        windowRootFournisseur.getChildren().addAll(IdFournisseurModifier, NomFournisseurModifier,
+                                EmailFournisseurModifier, EnregistrerAnullerModifierFournisseur);
 
-                    modifierFenetre.setScene(testt);
-                    modifierFenetre.show();
+                        Stage modifierFenetre = new Stage();
+                        modifierFenetre.setTitle("Modifier le fournisseur");
+                        Scene testt = new Scene(windowRootFournisseur);
+                        testt.getStylesheets().add(getClass().getResource("styles.css").toExternalForm());
+
+                        modifierFenetre.setScene(testt);
+                        modifierFenetre.show();
+                    } catch (Exception err) {
+                        showAlert("Une erreur est survenue lors de la modification UI de fournisseur");
+                        System.out.println("Erreur lors lors de la modification UI de fournisseur : " + err);
+                    }
                     EnregistrerFenetre.setOnAction(event -> {
-                        fournisseur.setNomFournisseur(NomFournisseurModifierInput.getText());
-                        fournisseur.setEmailFournisseur(EmailFournisseurModifierInput.getText());
-                        fournisseur.setId(IdFournisseurModifierInput.getText());
-                        tableFournisseur.refresh();
-                        modifierFenetre.close();
+                        try {
+                            fournisseur.setNomFournisseur(NomFournisseurModifierInput.getText());
+                            fournisseur.setEmailFournisseur(EmailFournisseurModifierInput.getText());
+                            fournisseur.setId(IdFournisseurModifierInput.getText());
+                            tableFournisseur.refresh();
+                            modifierFenetre.close();
+
+                            Bson filter = Filters.eq("_id", fournisseur.getObjectId());
+                            Document updateFournisseur = new Document("$set", fournisseur.toDocument());
+                            FourisseurMongo.updateOne(filter, updateFournisseur);
+                        } catch (Exception err) {
+                            showAlert(
+                                    "Une erreur est survenue lors de la modification  de fournisseur sur base de donne ou observablelist");
+                            System.out.println(
+                                    "Erreur lors de la modification  de fournisseur sur base de donne ou observablelist"
+                                            + err);
+                        }
                     });
                     AnullerFenetre.setOnAction(event -> {
                         tableFournisseur.refresh();
@@ -601,13 +721,34 @@ public class Gestion extends Application {
         tableFournisseur.getColumns().addAll(ColumnIDfournisseur, ColumnNomFournisseur, ColumnEmailFourniseur,
                 DeleteFournisseur);
         FinalFournisseur.getChildren().add(tableFournisseur);
+        try {
+            for (Document doc : FourisseurMongo.find()) {
+                FournisseurObjet f = new FournisseurObjet(doc.getString("id"), doc.getString("FournisseurNom"),
+                        doc.getString("EmailFournisseur"));
+                f.setObjectId(doc.getObjectId("_id"));
+                observablesFournisseur.add(f);
+            }
+        } catch (Exception err) {
+            showAlert("Une erreur est survenue lors de chargement de donnees  de fournisseur");
+            System.out.println("Erreur lors de chargement de donnees  de fournisseur" + err);
+        }
 
         AjouterFournisseurButton.setOnAction(e -> {
-            FournisseurObjet fournisseurobjet = new FournisseurObjet(IDFournisseurInput.getText(),
-                    NomFournisseurInput.getText(),
-                    EmailFournisseurInput.getText());
-            observablesFournisseur.add(fournisseurobjet);
+            try {
+                FournisseurObjet fournisseurobjet = new FournisseurObjet(IDFournisseurInput.getText(),
+                        NomFournisseurInput.getText(),
+                        EmailFournisseurInput.getText());
+                Document FournisseurInsert = fournisseurobjet.toDocument();
+                FourisseurMongo.insertOne(FournisseurInsert);
+                observablesFournisseur.add(fournisseurobjet);
+                FournisseurStage.close();
+            } catch (Exception err) {
+                showAlert("Une erreur est survenue lors de la creation de fournisseur");
+                System.out.println("Erreur lors de la creatuin de fournisseur /ajouter dans base de donnees : " + err);
+            }
+
         });
+
         // ------------------TABLE DE BOARD SECTION-----------------
 
         VBox TableDeBoardMain = new VBox(20);
@@ -778,43 +919,71 @@ public class Gestion extends Application {
         ObservableList<MovementObjet> ListMovement = FXCollections.observableArrayList();
 
         AjouterBouttonMovement.setOnAction(e -> {
-            String articlereference = ajouterCategorieArticleMovement.getValue();
-            MovementObjet movementobjet = new MovementObjet(Integer.parseInt(QuantiteMovementInput.getText()),
-                    AjouterTypeDeMovementInput.getValue(), CommentaireMovemnetInput.getText(), LocalDate.now(),
-                    articlereference);
-            for (ArticleObjet article : observablesArticle) {
-                String Reference_Nom = article.getNom() + "-" + article.getReference();
-                if (Reference_Nom.equals(ajouterCategorieArticleMovement.getValue())) {
+            try {
+                String articlereference = ajouterCategorieArticleMovement.getValue();
+                MovementObjet movementobjet = new MovementObjet(Integer.parseInt(QuantiteMovementInput.getText()),
+                        AjouterTypeDeMovementInput.getValue(), CommentaireMovemnetInput.getText(), LocalDate.now(),
+                        articlereference);
+                for (Document article : ArticleMongo.find()) {
+                    String Reference_Nom = article.getString("NomArticle") + "-"
+                            + article.getString("ReferenceArticle");
+                    if (Reference_Nom.equals(ajouterCategorieArticleMovement.getValue())) {
 
-                    if (AjouterTypeDeMovementInput.getValue().equals("Sortie(vente)")) {
-                        if (article.getQuantite() >= Integer.parseInt(QuantiteMovementInput.getText())) {
+                        if (AjouterTypeDeMovementInput.getValue().equals("Sortie(vente)")) {
+                            if (article.getInteger("Quantite") >= Integer.parseInt(QuantiteMovementInput.getText())) {
+                                ObjectId id = article.getObjectId("_id");
+                                Bson f = Filters.eq("_id", id);
+                                Document update = new Document("$inc",
+                                        new Document("Quantite", -Integer.parseInt(QuantiteMovementInput.getText())));
+                                ArticleMongo.updateOne(f, update);
+                                for (ArticleObjet art : observablesArticle) {
+                                    if (art.getReference().equals(article.getString("ReferenceArticle"))) {
+                                        art.setQuantite(
+                                                art.getQuantite() - Integer.parseInt(QuantiteMovementInput.getText()));
 
-                            article.setQuantite(
-                                    article.getQuantite() - Integer.parseInt(QuantiteMovementInput.getText()));
-                            ListMovement.add(movementobjet);
+                                    }
+                                }
+                                tableArticle.refresh();
+                                ListMovement.add(movementobjet);
+                                Document doc = movementobjet.toDocument();
+                                MovementMongo.insertOne(doc);
 
+                                MovementStage.close();
+
+                            } else {
+                                Alert QuantiteInsufisante = new Alert(AlertType.INFORMATION);
+                                QuantiteInsufisante.setTitle("ERROR");
+                                QuantiteInsufisante.setContentText("Quantite Insufisante");
+                                QuantiteInsufisante.setHeaderText("Error");
+                                QuantiteInsufisante.showAndWait();
+                            }
+                        } else if ((AjouterTypeDeMovementInput.getValue().equals("Entree(Reception)"))) {
+
+                            ObjectId id = article.getObjectId("_id");
+                            Bson f = Filters.eq("_id", id);
+                            Document update = new Document("$inc",
+                                    new Document("Quantite", Integer.parseInt(QuantiteMovementInput.getText())));
+                            ArticleMongo.updateOne(f, update);
+                            for (ArticleObjet art : observablesArticle) {
+                                if (art.getReference().equals(article.getString("ReferenceArticle"))) {
+                                    art.setQuantite(
+                                            art.getQuantite() + Integer.parseInt(QuantiteMovementInput.getText()));
+
+                                }
+                            }
                             tableArticle.refresh();
+                            ListMovement.add(movementobjet);
+                            Document doc = movementobjet.toDocument();
+                            MovementMongo.insertOne(doc);
                             MovementStage.close();
 
-                        } else {
-                            Alert QuantiteInsufisante = new Alert(AlertType.INFORMATION);
-                            QuantiteInsufisante.setTitle("ERROR");
-                            QuantiteInsufisante.setContentText("Quantite Insufisante");
-                            QuantiteInsufisante.setHeaderText("Error");
-                            QuantiteInsufisante.showAndWait();
                         }
-                    } else if ((AjouterTypeDeMovementInput.getValue().equals("Entree(Reception)"))) {
-
-                        article.setQuantite(
-                                article.getQuantite() + Integer.parseInt(QuantiteMovementInput.getText()));
-                        tableArticle.refresh();
-                        ListMovement.add(movementobjet);
-
-                        MovementStage.close();
-
                     }
-                }
 
+                }
+            } catch (Exception err) {
+                showAlert("Une erreur est survenue lors de l ajout du mouvement de stock");
+                System.out.println("Erreur lors de l ajout du mouvement de stock : " + err);
             }
 
         });
@@ -823,22 +992,32 @@ public class Gestion extends Application {
         });
 
         AjouterMovement.setOnAction(e -> {
-            if (observablesArticle.size() != 0) {
-                for (ArticleObjet article : observablesArticle) {
-                    if (!ajouterCategorieArticleMovement.getItems()
-                            .contains(article.getNom() + "-" + article.getReference()))
-                        ajouterCategorieArticleMovement.getItems().add(article.getNom() + "-" + article.getReference());
+            try {
+                if (observablesArticle.size() != 0) {
+                    for (Document article : ArticleMongo.find()) {
+                        if (!ajouterCategorieArticleMovement.getItems()
+                                .contains(
+                                        article.getString("NomArticle") + "-" + article.getString("ReferenceArticle")))
+
+                        {
+                            ajouterCategorieArticleMovement.getItems()
+                                    .add(article.getString("NomArticle") + "-" + article.getString("ReferenceArticle"));
+                        }
+                    }
+                    MovementScene.getStylesheets().add(getClass().getResource("styles.css").toExternalForm());
+                    MovementStage.setTitle("Nouveau Movemnet de Stock");
+                    MovementStage.setScene(MovementScene);
+                    MovementStage.show();
+                } else {
+                    Alert EmptyArticle = new Alert(AlertType.INFORMATION);
+                    EmptyArticle.setTitle("Alert");
+                    EmptyArticle.setHeaderText("error");
+                    EmptyArticle.setContentText("Vous devez ajouter des Articles en premier!!");
+                    EmptyArticle.showAndWait();
                 }
-                MovementScene.getStylesheets().add(getClass().getResource("styles.css").toExternalForm());
-                MovementStage.setTitle("Nouveau Movemnet de Stock");
-                MovementStage.setScene(MovementScene);
-                MovementStage.show();
-            } else {
-                Alert EmptyArticle = new Alert(AlertType.INFORMATION);
-                EmptyArticle.setTitle("Alert");
-                EmptyArticle.setHeaderText("error");
-                EmptyArticle.setContentText("Vous devez ajouter des Articles en premier!!");
-                EmptyArticle.showAndWait();
+            } catch (Exception err) {
+                showAlert("Une erreur est survenue lors de l ouverture de la fenetre de mouvement de stock");
+                System.out.println("Erreur lors de l ouverture de la fenetre de mouvement de stock : " + err);
             }
         });
 
@@ -925,7 +1104,37 @@ public class Gestion extends Application {
         TableMovement.setItems(ListMovement);
         TableMovement.getColumns().addAll(dateMovement, article_movement, TypeMovementColumn, QuntiteMovementColumn,
                 CommentaireMovementColumn);
+        try {
+            for (Document doc : MovementMongo.find()) {
+                String dateStr = doc.getString("date");
+                LocalDate movementDate;
+
+                if (dateStr != null && !dateStr.isEmpty()) {
+                    try {
+                        movementDate = LocalDate.parse(dateStr);
+                    } catch (DateTimeParseException e) {
+                        movementDate = LocalDate.now();
+                    }
+                } else {
+                    movementDate = LocalDate.now();
+                }
+
+                MovementObjet movement = new MovementObjet(
+                        doc.getInteger("quantite"),
+                        doc.getString("type"),
+                        doc.getString("commentaire"),
+                        movementDate,
+                        doc.getString("reference"));
+                movement.setObjectId(doc.getObjectId("_id"));
+                ListMovement.add(movement);
+            }
+            TableMovement.refresh();
+        } catch (Exception err) {
+            showAlert("Une erreur est survenue lors de chargement de donnees de movements");
+            System.out.println("Erreur lors de chargement de donnees de movements : " + err);
+        }
         GestionDeMovemenetMain.getChildren().add(TableMovement);
+
         // -----------------------BARRRE LATERRALLE------------------------------
         VBox BarreLateralle = new VBox();
         BarreLateralle.getStyleClass().add("sidebar");
@@ -939,26 +1148,31 @@ public class Gestion extends Application {
         main.getStyleClass().add("content-area");
 
         TableDeBoard.setOnAction(param -> {
-            int count = 0;
-            for (ArticleObjet article : observablesArticle) {
-                count += article.getQuantite();
-            }
-            TOtalArticlesValue.setText(String.valueOf(observablesArticle.size()));
-            QuantiteTotalValue.setText(String.valueOf(count));
-            main.getChildren().clear();
-            main.getChildren().setAll(TableDeBoardMain);
+            try {
+                int count = 0;
+                for (ArticleObjet article : observablesArticle) {
+                    count += article.getQuantite();
+                }
+                TOtalArticlesValue.setText(String.valueOf(observablesArticle.size()));
+                QuantiteTotalValue.setText(String.valueOf(count));
+                main.getChildren().clear();
+                main.getChildren().setAll(TableDeBoardMain);
 
-            int AlertCount = 0;
-            for (ArticleObjet article : observablesArticle) {
-                if (article.getQuantite() < article.getSeuilAlerte())
-                    AlertCount++;
-            }
-            AlertValue.setText(String.valueOf(AlertCount));
+                int AlertCount = 0;
+                for (ArticleObjet article : observablesArticle) {
+                    if (article.getQuantite() < article.getSeuilAlerte())
+                        AlertCount++;
+                }
+                AlertValue.setText(String.valueOf(AlertCount));
 
-            TableDeBoard.getStyleClass().add("active");
-            toFournisseur.getStyleClass().remove("active");
-            toArticle.getStyleClass().remove("active");
-            toGestionDeMovemenet.getStyleClass().remove("active");
+                TableDeBoard.getStyleClass().add("active");
+                toFournisseur.getStyleClass().remove("active");
+                toArticle.getStyleClass().remove("active");
+                toGestionDeMovemenet.getStyleClass().remove("active");
+            } catch (Exception err) {
+                showAlert("Une erreur est survenue lors de l'affichage du tableau de bord");
+                System.out.println("Erreur lors de l'affichage du tableau de bord : " + err);
+            }
 
         });
 

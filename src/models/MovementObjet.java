@@ -1,22 +1,26 @@
 package models;
 
 import java.time.LocalDate;
+import org.bson.Document;
+
+import org.bson.Document;
+import org.bson.types.ObjectId;
 
 public class MovementObjet {
-    // ArticleObjet article_movement;
     int quantite;
     String type_movement;
     String commentaire;
     LocalDate date;
+    ObjectId objectId;
     String article_reference;
 
-    public MovementObjet(int quantite, String type_movement, String commentaire, LocalDate date ,String article_reference) {
+    public MovementObjet(int quantite, String type_movement, String commentaire, LocalDate date,
+            String article_reference) {
         this.date = date;
         this.quantite = quantite;
         this.type_movement = type_movement;
         this.article_reference = article_reference;
         this.commentaire = commentaire;
-
     }
 
     public LocalDate getDate() {
@@ -57,5 +61,18 @@ public class MovementObjet {
 
     public void setCommentaire(String commentaire) {
         this.commentaire = commentaire;
+    }
+
+    public ObjectId getObjectId() {
+        return objectId;
+    }
+
+    public void setObjectId(ObjectId objectId) {
+        this.objectId = objectId;
+    }
+
+    public Document toDocument() {
+        return new Document("Date", date).append("quantite", quantite).append("type", type_movement)
+                .append("commentaire", commentaire).append("reference", article_reference);
     }
 }

@@ -2,3 +2,4 @@
 *.class
 .vscode/
 src/tempCodeRunnerFile.java
+src/.env

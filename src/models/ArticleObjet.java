@@ -1,5 +1,8 @@
 package models;
 
+import org.bson.Document;
+import org.bson.types.ObjectId;
+
 public class ArticleObjet {
     String nom;
     String reference;
@@ -7,6 +10,9 @@ public class ArticleObjet {
     int quantite;
     int seuilAlerte;
     String fournisseurid;
+    ObjectId id = new ObjectId();
+
+   
 
     public ArticleObjet(String nom, String reference, String Categorie, int quantite, int seuilAlerte,
             String fournisseurid) {
@@ -16,6 +22,14 @@ public class ArticleObjet {
         this.quantite = quantite;
         this.seuilAlerte = seuilAlerte;
         this.fournisseurid = fournisseurid;
+
+    }
+     public ObjectId getId() {
+        return id;
+    }
+
+    public void setId(ObjectId id) {
+        this.id = id;
     }
 
     public String getNom() {
@@ -64,6 +78,15 @@ public class ArticleObjet {
 
     public void setSeuilAlerte(int seuilAlerte) {
         this.seuilAlerte = seuilAlerte;
+    }
+
+    // pour faciliter l enregesitrement des objet dans mongodb
+    public Document toDocument() {
+        return new Document("NomArticle", nom).append("ReferenceArticle", reference)
+                .append("CategorieArticle", Categorie)
+                .append("Quantite", quantite)
+                .append("SeuilAlert", seuilAlerte)
+                .append("IDFournisseur", fournisseurid);
     }
 
 }
