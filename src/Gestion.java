@@ -52,18 +52,18 @@ public class Gestion extends Application {
     @Override
     public void start(Stage stage) {
         // ---------BASE DE DONNNS---------------------------
-
-        Dotenv dotenv = Dotenv.load();
-        String user = dotenv.get("DB_USER");
-        String password = dotenv.get("DB_PASSWORD");
-        String url = "mongodb+srv://" + user + ":" + password
-                + "@cluster0.lsxjh.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
-        MongoClient mongoclient = MongoClients.create(url);
-        MongoDatabase database = mongoclient.getDatabase("Gestion_De_Stock");
-        MongoCollection<Document> ArticleMongo = database.getCollection("Article");
-        MongoCollection<Document> FourisseurMongo = database.getCollection("Fournisseur");
-        MongoCollection<Document> MovementMongo = database.getCollection("Movement");
-        System.out.println("Base de donne connectee");
+      
+            Dotenv dotenv = Dotenv.load();
+            String user = dotenv.get("DB_USER");
+            String password = dotenv.get("DB_PASSWORD");
+            String url = "mongodb+srv://" + user + ":" + password
+                    + "@cluster0.lsxjh.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+            MongoClient mongoclient = MongoClients.create(url);
+            MongoDatabase database = mongoclient.getDatabase("Gestion_De_Stock");
+            MongoCollection<Document> ArticleMongo = database.getCollection("Article");
+            MongoCollection<Document> FourisseurMongo = database.getCollection("Fournisseur");
+            MongoCollection<Document> MovementMongo = database.getCollection("Movement");
+            System.out.println("Base de donne connectee");
 
         // --------------------------------------------------
 
@@ -149,7 +149,7 @@ public class Gestion extends Application {
         VBox IDfournisseur = new VBox();
         IDfournisseur.getStyleClass().add("form-group");
         Label labelIDfournisseureArticle = new Label("ID de Fournisseur");
-        labelIDfournisseureArticle.getStyleClass().add("form-label");
+        labelIDfournisseureArticle.getStyleClass().add(" form-label");
         TextField FournisseurIDArticle = new TextField();
         FournisseurIDArticle.getStyleClass().add("form-textfield");
         FournisseurIDArticle.setPromptText("ID de Fournisseur");
@@ -459,7 +459,7 @@ public class Gestion extends Application {
         IDFournisseurInput.setPromptText("Entrer ID de fournisseur");
         IDFournisseurContainer.getChildren().addAll(labelIDFournisseur, IDFournisseurInput);
 
-        // -------------NOM FOURNISSEUR-------------------------------------------
+        // -------------NOM FOURNISSEUR---------------------------------------------
         Label FournisseurTitle = new Label("Ajouter un nouveau Fournisseur");
         FournisseurTitle.getStyleClass().add("section-title");
 
@@ -482,7 +482,7 @@ public class Gestion extends Application {
         EmailFournisseurInput.setPromptText("Entrer email de fournisseur");
         EmailFournisseurContainer.getChildren().addAll(labelEmailFournisseur, EmailFournisseurInput);
 
-        // ---------------DELARER LES BOUTTONS AJOUTER ANNULER FOURNISSEUR------------
+        // ---------------DELARER LES BOUTTONS AJOUTER ANNULER FOURNISSEUR-------------
         HBox Ajouter_Anller_Bouttons = new HBox();
         Ajouter_Anller_Bouttons.getStyleClass().add("button-container");
         Ajouter_Anller_Bouttons.setAlignment(Pos.CENTER);
