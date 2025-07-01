@@ -639,3 +639,59 @@
   -fx-font-family: "Segoe UI", "San Francisco", "Helvetica Neue", Arial,
     sans-serif;
 }
+/* Styles pour le conteneur principal des alertes */
+.alerte-container {
+    -fx-spacing: 15px;
+    -fx-padding: 15px;
+    -fx-background-color: transparent;
+}
+
+/* Style pour chaque élément d'alerte */
+.alerte-item {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 8px;
+    -fx-border-color: #E0E0E0;
+    -fx-border-radius: 8px;
+    -fx-border-width: 1px;
+    -fx-padding: 15px;
+    -fx-spacing: 8px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 5, 0, 0, 2);
+}
+
+/* Style pour le titre de l'article en alerte */
+.alerte-titre {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #333333;
+}
+
+/* Style pour les détails du stock */
+.alerte-stock {
+    -fx-font-size: 14px;
+    -fx-text-fill: #666666;
+}
+
+/* Style pour le statut critique */
+.alerte-critique {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #E53935;
+    -fx-padding: 3px 8px;
+    -fx-background-color: #FFEBEE;
+    -fx-background-radius: 10px;
+    -fx-border-color: #FFCDD2;
+    -fx-border-radius: 10px;
+    -fx-border-width: 1px;
+}
+
+/* Style pour l'en-tête de la section */
+.stats-card-primary .stats-number-white {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: black;
+}
+
+/* Style pour l'icône dans l'en-tête */
+.stats-card-primary .image-view {
+    -fx-effect: invert(100%);
+}
