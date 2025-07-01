@@ -205,7 +205,7 @@ public class Gestion extends Application {
             ArticleStage.close();
 
         });
-        // ==========AFFICHAGE DES ARTICLES========================================
+        // ==========AFFICHAGE DES ARTICLES=======================================
         // -------CONSTRUIRE UN
         // TABLEAU-------------------------------------------------------
         ObservableList<ArticleObjet> observablesArticle = FXCollections.observableArrayList();
