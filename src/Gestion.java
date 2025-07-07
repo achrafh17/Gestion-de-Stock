@@ -2,6 +2,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
@@ -52,18 +53,18 @@ public class Gestion extends Application {
     @Override
     public void start(Stage stage) {
         // ---------BASE DE DONNNS---------------------------
-      
-            Dotenv dotenv = Dotenv.load();
-            String user = dotenv.get("DB_USER");
-            String password = dotenv.get("DB_PASSWORD");
-            String url = "mongodb+srv://" + user + ":" + password
-                    + "@cluster0.lsxjh.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
-            MongoClient mongoclient = MongoClients.create(url);
-            MongoDatabase database = mongoclient.getDatabase("Gestion_De_Stock");
-            MongoCollection<Document> ArticleMongo = database.getCollection("Article");
-            MongoCollection<Document> FourisseurMongo = database.getCollection("Fournisseur");
-            MongoCollection<Document> MovementMongo = database.getCollection("Movement");
-            System.out.println("Base de donne connectee");
+
+        Dotenv dotenv = Dotenv.load();
+        String user = dotenv.get("DB_USER");
+        String password = dotenv.get("DB_PASSWORD");
+        String url = "mongodb+srv://" + user + ":" + password
+                + "@cluster0.lsxjh.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+        MongoClient mongoclient = MongoClients.create(url);
+        MongoDatabase database = mongoclient.getDatabase("Gestion_De_Stock");
+        MongoCollection<Document> ArticleMongo = database.getCollection("Article");
+        MongoCollection<Document> FourisseurMongo = database.getCollection("Fournisseur");
+        MongoCollection<Document> MovementMongo = database.getCollection("Movement");
+        System.out.println("Base de donne connectee");
 
         // --------------------------------------------------
 
@@ -101,6 +102,16 @@ public class Gestion extends Application {
         CategorieArticle.getStyleClass().add("form-textfield");
         CategorieArticle.setPromptText("Categorie d Article");
         Categorie.getChildren().addAll(labelCategorieArticle, CategorieArticle);
+
+        // ----------------------prix Article---------------------
+        VBox Prix = new VBox();
+        Prix.getStyleClass().add("form-group");
+        Label labelPrixArticle = new Label("Prix de l' Article");
+        labelPrixArticle.getStyleClass().add("form-label");
+        TextField PrixArticle = new TextField();
+        PrixArticle.getStyleClass().add("form-textfield");
+        PrixArticle.setPromptText("Prix d Article(DH)");
+        Prix.getChildren().addAll(labelPrixArticle, PrixArticle);
 
         // ----------------------Quantite Article---------------------
         VBox Quantite = new VBox();
@@ -190,7 +201,7 @@ public class Gestion extends Application {
         ArticleFinal.getChildren().addAll(AjouterArticle);
         Article.getStyleClass().add("form-container");
         Article.getChildren().addAll(TitleArticle, NomArticle,
-                ReferenceArticle, Categorie, Quantite, SeuilAlerte, IDfournisseur, Bouttons_Ajouter_Anuller);
+                ReferenceArticle, Categorie, Prix, Quantite, SeuilAlerte, IDfournisseur, Bouttons_Ajouter_Anuller);
         Scene ArticleScene = new Scene(Article);
         Stage ArticleStage = new Stage();
 
@@ -215,6 +226,10 @@ public class Gestion extends Application {
         TableColumn<ArticleObjet, String> ColumnNomArticle = new TableColumn<>("Nom");
         ColumnNomArticle.setCellValueFactory(new PropertyValueFactory<>("nom"));
         ColumnNomArticle.getStyleClass().add("table-column");
+
+        TableColumn<ArticleObjet, String> ColumnPrixArticle = new TableColumn<>("Prix(DH)");
+        ColumnPrixArticle.setCellValueFactory(new PropertyValueFactory<>("prix"));
+        ColumnPrixArticle.getStyleClass().add("table-column");
 
         TableColumn<ArticleObjet, String> ColumnReferenceArticle = new TableColumn<>("Reference");
         ColumnReferenceArticle.setCellValueFactory(new PropertyValueFactory<>("reference"));
@@ -405,16 +420,21 @@ public class Gestion extends Application {
         // -----------------MODIFIER ARTICLE--------------------------------
 
         tableArticle.setItems(observablesArticle);
-        tableArticle.getColumns().addAll(ColumnNomArticle, ColumnReferenceArticle, ColumnIDFOURNISSEURArticle,
+        tableArticle.getColumns().addAll(ColumnNomArticle, ColumnPrixArticle, ColumnReferenceArticle,
+                ColumnIDFOURNISSEURArticle,
                 QuantiteArticleColumn, ColumnCategorieArticle, ColumnSeuilArticle, DeleteArticle);
 
         for (Document doc : ArticleMongo.find()) {
+            Double prix = doc.getDouble("Prix");
+            if (prix == null) {
+                prix = 0.0;
+            }
             ArticleObjet articleobjet = new ArticleObjet(doc.getString("NomArticle"),
                     doc.getString("ReferenceArticle"),
                     doc.getString("CategorieArticle"),
                     doc.getInteger("Quantite", 0),
                     doc.getInteger("SeuilAlert", 0),
-                    doc.getString("IDFournisseur"));
+                    doc.getString("IDFournisseur"), prix);
             articleobjet.setId(doc.getObjectId("_id"));
             observablesArticle.add(articleobjet);
             tableArticle.refresh();
@@ -429,7 +449,7 @@ public class Gestion extends Application {
                     ajouterReferenceArticle.getText(),
                     CategorieArticle.getText(),
                     Integer.parseInt(QuantiteArticle.getText()), Integer.parseInt(SeuilAlertinput.getText()),
-                    FournisseurIDArticle.getText());
+                    FournisseurIDArticle.getText(), Double.parseDouble(PrixArticle.getText()));
 
             Document docArticle = ArticleInsert.toDocument();
 
@@ -759,9 +779,9 @@ public class Gestion extends Application {
         HBox TableDeBoardButtonItems = new HBox(8);
         TableDeBoardButtonItems.getChildren().addAll(TableDeBoardIcon, new Label("Table de board"));
 
+        // -----------------------ARTICLES EN ALERTES------------------
         ObservableList<ArticleObjet> ListArticleEnAlerte = FXCollections.observableArrayList();
 
-        // ARTICLES EN ALERTES
         VBox AlerteEnStockMain = new VBox();
         AlerteEnStockMain.getStyleClass().addAll("stats-card", "stats-card-primary");
 
@@ -775,9 +795,22 @@ public class Gestion extends Application {
         VBox AlerteContainer = new VBox();
         AlerteContainer.getStyleClass().add("alerte-container");
         AlerteEnStockMain.getChildren().addAll(ArticleEnAlerteTitleContainer, AlerteContainer);
+        // -------------DERNIERS Movement ---------------------
+        ObservableList<MovementObjet> ListMovement = FXCollections.observableArrayList();
 
+        VBox DernierMovementMain = new VBox();
+        DernierMovementMain.getStyleClass().addAll("stats-card", "stats-card-primary");
+
+        Label dernierMovementLabel = new Label("Derniers Mouvements");
+        dernierMovementLabel.getStyleClass().add("stats-number-white");
+
+        VBox DernierMovmentContainer = new VBox();
+        DernierMovmentContainer.getStyleClass().add("alerte-container");
+
+        DernierMovementMain.getChildren().addAll(dernierMovementLabel, DernierMovmentContainer);
+        // -------------------
         TableDeBoardMain.getChildren().addAll(FinalTotalArticles, FinalTotalQuantite, finalAlert,
-                AlerteEnStockMain);
+                AlerteEnStockMain, DernierMovementMain);
 
         // TO ARTICLE-----------------------------
         ImageView ArticleIcon = new ImageView(
@@ -883,7 +916,6 @@ public class Gestion extends Application {
         Scene MovementScene = new Scene(Movement);
         Stage MovementStage = new Stage();
         // c est boutton de fentre
-        ObservableList<MovementObjet> ListMovement = FXCollections.observableArrayList();
 
         AjouterBouttonMovement.setOnAction(e -> {
 
@@ -1107,6 +1139,7 @@ public class Gestion extends Application {
         TableDeBoard.setOnAction(param -> {
             AlerteContainer.getChildren().clear(); // Vider le conteneur
             ListArticleEnAlerte.clear();
+            vboxAlert.getChildren().clear();
             int count = 0;
             for (ArticleObjet article : observablesArticle) {
                 count += article.getQuantite();
@@ -1133,32 +1166,102 @@ public class Gestion extends Application {
                     ListArticleEnAlerte.add(article);
                 }
             }
-            for (ArticleObjet article : ListArticleEnAlerte) {
 
-                VBox ArticleBoxAlert = new VBox();// box qui va cintient nom quantite en stock et seuil
-                ArticleBoxAlert.getStyleClass().add("alerte-item");
+            if (!ListArticleEnAlerte.isEmpty()) {
+                // box qui va cintient nom quantite en stock et seuil
+                for (ArticleObjet article : ListArticleEnAlerte) {
+                    VBox ArticleBoxAlert = new VBox();
+                    ArticleBoxAlert.getStyleClass().add("alerte-item");
 
-                Label NomArticleAlert = new Label("hheloo");// Nom d article
-                NomArticleAlert.getStyleClass().add("alerte-titre");
+                    Label NomArticleAlert = new Label("");// Nom d article
+                    NomArticleAlert.getStyleClass().add("alerte-titre");
 
-                Label Stock_SeuilArticleAlerte = new Label();
-                Stock_SeuilArticleAlerte.getStyleClass().add("alerte-stock");
+                    Label Stock_SeuilArticleAlerte = new Label();
+                    Stock_SeuilArticleAlerte.getStyleClass().add("alerte-stock");
 
-                Label critiqueLabel = new Label("Critique");
-                critiqueLabel.getStyleClass().add("alerte-critique");
+                    Label critiqueLabel = new Label("Critique");
+                    critiqueLabel.getStyleClass().add("alerte-critique");
 
-                ArticleBoxAlert.getChildren().addAll(NomArticleAlert, Stock_SeuilArticleAlerte, critiqueLabel);
-                NomArticleAlert.setText(article.getNom());
-                Stock_SeuilArticleAlerte
-                        .setText("Stock" + article.getQuantite() + "" + "/" + "Seuil" + article.getSeuilAlerte());
+                    ArticleBoxAlert.getChildren().addAll(NomArticleAlert, Stock_SeuilArticleAlerte, critiqueLabel);
+                    NomArticleAlert.setText(article.getNom());
+                    Stock_SeuilArticleAlerte
+                            .setText("Stock" + article.getQuantite() + "" + "/" + "Seuil" + article.getSeuilAlerte());
 
-                AlerteContainer.getChildren().add(ArticleBoxAlert);
+                    AlerteContainer.getChildren().add(ArticleBoxAlert);
+                }
+            } else {
+                ImageView checkIcon = new ImageView(new Image("file:src/asserts/check-circle.png"));
+                checkIcon.getStyleClass().add("alerte-check-icon");
+
+                Label message = new Label("Aucune alerte en stock");
+                message.getStyleClass().add("alerte-empty-message");
+
+                VBox vboxAlert = new VBox(checkIcon, message);
+                vboxAlert.getStyleClass().add("alerte-empty-container");
+
+                AlerteEnStockMain.getChildren().add(vboxAlert);
+
+                AlerteEnStockMain.setAlignment(Pos.CENTER);
+
+            }
+
+            DernierMovmentContainer.getChildren().clear();
+
+            ObservableList<MovementObjet> ReversedList = FXCollections
+                    .observableArrayList(ListMovement);
+            Collections.reverse(ReversedList);
+
+            ObservableList<MovementObjet> DernierMovementList = FXCollections
+                    .observableArrayList(ReversedList.subList(0,
+                            Math.min(3, ReversedList.size())));
+            if (!ReversedList.isEmpty()) {
+                for (MovementObjet mov : DernierMovementList) {
+                    VBox DernierMovement = new VBox();
+                    DernierMovement.getStyleClass().add("alerte-item");
+
+                    Label DernierMovementNomArticle = new Label();
+                    DernierMovementNomArticle.setText(mov.getArticle_reference());
+                    DernierMovementNomArticle.getStyleClass().add("alerte-titre");
+
+                    Label DateDernierMovement = new Label();
+                    DateDernierMovement.setText(String.valueOf(mov.getDate()));
+                    DateDernierMovement.getStyleClass().add("alerte-stock");
+
+                    Label Type = new Label();
+                    Type.getStyleClass().add("alerte-titre");
+
+                    if (mov.getType_movement().equals("Sortie(vente)")) {
+                        Type.getStyleClass().add("alerte-critique");
+                        Type.setText(mov.getType_movement() + " " + "-" + mov.getQuantite());
+
+                    } else if (mov.getType_movement().equals("Entree(Reception)")) {
+                        Type.getStyleClass().add("entree");
+                        Type.setText(mov.getType_movement() + " " + "+" + mov.getQuantite());
+
+                    }
+
+                    DernierMovement.getChildren().addAll(DernierMovementNomArticle, DateDernierMovement, Type);
+                    DernierMovmentContainer.getChildren().add(DernierMovement);
+                }
+            } else {
+
+                ImageView checkIcon = new ImageView(new Image("file:src/asserts/x-circle.png"));
+                checkIcon.getStyleClass().add("alerte-check-icon");
+
+                Label message = new Label("Aucune Movementn  enregistre ");
+                message.getStyleClass().add("movement-empty-message");
+
+                VBox vboxMov = new VBox(checkIcon, message);
+                vboxMov.getStyleClass().add("alerte-empty-container");
+                DernierMovmentContainer.getChildren().add(vboxMov);
 
             }
 
         });
 
-        toArticle.setOnAction(e -> {
+        toArticle.setOnAction(e ->
+
+        {
             main.getChildren().setAll(ArticleFinal);
             toArticle.getStyleClass().add("active");
             toFournisseur.getStyleClass().remove("active");

@@ -10,21 +10,30 @@ public class ArticleObjet {
     int quantite;
     int seuilAlerte;
     String fournisseurid;
+    double prix;
     ObjectId id = new ObjectId();
 
-   
-
     public ArticleObjet(String nom, String reference, String Categorie, int quantite, int seuilAlerte,
-            String fournisseurid) {
+            String fournisseurid, double prix) {
         this.nom = nom;
         this.reference = reference;
         this.Categorie = Categorie;
         this.quantite = quantite;
         this.seuilAlerte = seuilAlerte;
         this.fournisseurid = fournisseurid;
+        this.prix = prix;
 
     }
-     public ObjectId getId() {
+
+    public double getPrix() {
+        return prix;
+    }
+
+    public void setPrix(double prix) {
+        this.prix = prix;
+    }
+
+    public ObjectId getId() {
         return id;
     }
 
@@ -86,7 +95,8 @@ public class ArticleObjet {
                 .append("CategorieArticle", Categorie)
                 .append("Quantite", quantite)
                 .append("SeuilAlert", seuilAlerte)
-                .append("IDFournisseur", fournisseurid);
+                .append("IDFournisseur", fournisseurid)
+                .append("Prix", prix);
     }
 
 }

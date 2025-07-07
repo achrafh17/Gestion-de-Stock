@@ -683,7 +683,17 @@
     -fx-border-radius: 10px;
     -fx-border-width: 1px;
 }
-
+.entree {
+  -fx-font-size: 12px;
+  -fx-font-weight: bold;
+  -fx-text-fill: #06b11d;
+  -fx-padding: 3px 8px;
+  -fx-background-color: #e8f5e9;
+  -fx-background-radius: 10px;
+  -fx-border-color: #b9f6ca;
+  -fx-border-radius: 10px;
+  -fx-border-width: 1px;
+}
 /* Style pour l'en-tête de la section */
 .stats-card-primary .stats-number-white {
     -fx-font-size: 18px;
@@ -694,4 +704,31 @@
 /* Style pour l'icône dans l'en-tête */
 .stats-card-primary .image-view {
     -fx-effect: invert(100%);
+}
+.alerte-empty-container {
+    -fx-alignment: center;
+    -fx-padding: 20px;
+    -fx-spacing: 15px;
+    -fx-background-color: transparent;
+}
+
+/* Style pour l'icône de validation */
+.alerte-check-icon {
+    -fx-fit-width: 80px;
+    -fx-fit-height: 80px;
+    -fx-opacity: 0.8;
+}
+
+/* Style pour le message quand il n'y a pas d'alertes */
+.alerte-empty-message {
+    -fx-font-size: 14px;
+    -fx-text-fill: #4CAF50;
+    -fx-font-weight: bold;
+    -fx-padding: 5px;
+}
+.movement-empty-message {
+ -fx-font-size: 14px;
+    -fx-text-fill: #1699f1;
+    -fx-font-weight: bold;
+    -fx-padding: 5px;
 }
