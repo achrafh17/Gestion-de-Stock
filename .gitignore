@@ -2,6 +2,5 @@
 *.class
 .vscode/
 src/tempCodeRunnerFile.java
-src/
+src/.env
 /lib
-C:\Users\achraf\OneDrive\Desktop\hallo projects\Gestion de Stock\.env
